@@ -3,14 +3,17 @@
 ## Project Structure & Module Organization
 - `cmd/learnd/main.go` is the application entrypoint.
 - `internal/` holds core packages (config, server, handlers, middleware, repository, summarizer, enricher, worker).
-- `templates/` contains HTML templates; `static/` holds compiled assets (e.g., `static/styles.css`).
+- `internal/ui/` contains `templ` UI sources (`*.templ`) and generated Go (`*_templ.go`); edit `.templ` files and regenerate with `templ generate`.
+- `static/` holds compiled assets (e.g., `static/styles.css`).
 - `tailwind/` contains source CSS for Tailwind; do not edit generated CSS directly.
 - `migrations/` contains Goose SQL migrations (e.g., `001_create_entries.sql`).
 - `scripts/` contains helper utilities (e.g., API key hashing).
 
 ## Build, Test, and Development Commands
-- `make run`: build Tailwind CSS and run the app via `go run ./cmd/learnd`.
-- `make build`: build a production binary at `bin/learnd`.
+- `make templ`: generate Go code from `templ` files.
+- `make templ-watch`: watch `templ` files and regenerate on change.
+- `make run`: generate `templ`, build Tailwind CSS, and run the app via `go run ./cmd/learnd`.
+- `make build`: generate `templ`, build Tailwind CSS, and build a production binary at `bin/learnd`.
 - `make tail-watch`: run Tailwind in watch mode (requires the `tailwindcss` CLI).
 - `make tail-prod`: build minified Tailwind output into `static/styles.css`.
 - `make migrate`, `make migrate-down`, `make migrate-status`: apply, rollback, or inspect database migrations using `goose`.
@@ -19,7 +22,7 @@
 
 ## Coding Style & Naming Conventions
 - Go code should be formatted with `gofmt`; keep packages cohesive under `internal/`.
-- Template files in `templates/` use 4-space indentation; follow existing block naming patterns.
+- `templ` files live under `internal/ui/` and should follow existing formatting; avoid editing generated `*_templ.go` files.
 - Migration files are numbered and snake-cased: `migrations/NNN_description.sql`.
 - Treat `static/styles.css` as generated output from Tailwind.
 

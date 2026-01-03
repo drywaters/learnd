@@ -26,9 +26,9 @@ RUN addgroup -S learnd \
     && adduser -S -G learnd learnd \
     && chown -R learnd:learnd /app
 
-ENV PORT=8080
+ENV PORT=4500
 ENV LOG_LEVEL=${LOG_LEVEL}
 USER learnd
 
-EXPOSE 8080
+EXPOSE 4500
 CMD ["./learnd"]
