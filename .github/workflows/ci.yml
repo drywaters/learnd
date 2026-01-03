@@ -27,7 +27,8 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version-file: 'go.mod'
+          cache-dependency-path: 'go.sum'
 
       - name: Install templ
         run: go install github.com/a-h/templ/cmd/templ@latest
