@@ -28,9 +28,7 @@ type YouTubeEnricher struct {
 func NewYouTubeEnricher(apiKey string) *YouTubeEnricher {
 	return &YouTubeEnricher{
 		apiKey: apiKey,
-		client: &http.Client{
-			Timeout: 10 * time.Second,
-		},
+		client: newSafeHTTPClient(10*time.Second, "www.googleapis.com"),
 	}
 }
 

@@ -12,14 +12,26 @@ import (
 
 const maxRedirects = 10
 
-func newSafeHTTPClient(timeout time.Duration) *http.Client {
+func newSafeHTTPClient(timeout time.Duration, allowedHosts ...string) *http.Client {
 	return &http.Client{
 		Timeout: timeout,
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
 			if len(via) >= maxRedirects {
 				return fmt.Errorf("stopped after %d redirects", maxRedirects)
 			}
-			return validateParsedURL(req.Context(), req.URL)
+			if err := validateParsedURL(req.Context(), req.URL); err != nil {
+				return err
+			}
+			if len(allowedHosts) > 0 {
+				host := strings.ToLower(req.URL.Hostname())
+				for _, allowed := range allowedHosts {
+					if strings.EqualFold(host, allowed) {
+						return nil
+					}
+				}
+				return fmt.Errorf("redirect to disallowed host: %s", req.URL.Hostname())
+			}
+			return nil
 		},
 	}
 }
@@ -68,9 +80,6 @@ func validateParsedURL(ctx context.Context, parsedURL *url.URL) error {
 		return nil
 	}
 
-	if ctx == nil {
-		ctx = context.Background()
-	}
 	addrs, err := net.DefaultResolver.LookupIPAddr(ctx, host)
 	if err != nil {
 		return fmt.Errorf("invalid URL: failed to resolve host")
