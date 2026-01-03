@@ -46,7 +46,7 @@ func LoginPage(errorType string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"w-full max-w-sm\"><!-- Logo --><div class=\"text-center mb-12\"><h1 class=\"font-display text-4xl font-semibold tracking-tight mb-2\" style=\"color: var(--color-ink);\">Learnd</h1><p class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">Your personal learning journal</p></div><!-- Login Card --><div class=\"card p-8\"><form method=\"POST\" action=\"/login\" class=\"space-y-6\" hx-boost=\"false\"><div><label for=\"api_key\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">API Key</label> <input type=\"password\" id=\"api_key\" name=\"api_key\" class=\"input-field w-full\" placeholder=\"Enter your API key\" autocomplete=\"current-password\" autofocus required></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"w-full max-w-sm\"><!-- Logo --><div class=\"text-center mb-12\"><h1 class=\"font-display text-4xl font-semibold tracking-tight mb-2\" style=\"color: var(--color-ink);\">learnd</h1><p class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">Your personal learning journal</p></div><!-- Login Card --><div class=\"card p-8\"><form method=\"POST\" action=\"/login\" class=\"space-y-6\" hx-boost=\"false\"><div><label for=\"api_key\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">API Key</label> <input type=\"password\" id=\"api_key\" name=\"api_key\" class=\"input-field w-full\" placeholder=\"Enter your API key\" autocomplete=\"current-password\" autofocus required></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -90,7 +90,7 @@ func LoginPage(errorType string) templ.Component {
 			}
 			return nil
 		})
-		templ_7745c5c3_Err = layout.Base("Sign In - Learnd").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
+		templ_7745c5c3_Err = layout.Base("Sign In - learnd").Render(templ.WithChildren(ctx, templ_7745c5c3_Var2), templ_7745c5c3_Buffer)
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
