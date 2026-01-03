@@ -59,6 +59,13 @@ templ EntryRow(entry ui.EntryView) {
 				</a>
 			</div>
 
+			<!-- Date added -->
+			if !entry.CreatedAt.IsZero() {
+				<div class="text-xs mb-1" style="color: var(--color-ink-lighter);">
+					{ ui.FormatDate(entry.CreatedAt) }
+				</div>
+			}
+
 			<!-- Meta row -->
 			<div class="flex flex-wrap items-center gap-2 text-xs">
 				<span class={ "badge", fmt.Sprintf("badge-%s", entry.SourceType) }>
