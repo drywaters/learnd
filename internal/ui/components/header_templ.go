@@ -30,7 +30,7 @@ func CaptureHeader() templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"border-b\" style=\"border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);\"><div class=\"max-w-4xl mx-auto px-4 py-4 flex items-center justify-between\"><a href=\"/\" class=\"font-display text-2xl font-semibold tracking-tight\" style=\"color: var(--color-ink);\">Learnd</a><nav class=\"flex items-center gap-4\"><a href=\"/reports\" class=\"btn-secondary flex items-center gap-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<header class=\"border-b\" style=\"border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);\"><div class=\"max-w-4xl mx-auto px-4 py-4 flex items-center justify-between\"><a href=\"/\" class=\"font-display text-2xl font-semibold tracking-tight\" style=\"color: var(--color-ink);\">learnd</a><nav class=\"flex items-center gap-4\"><a href=\"/reports\" class=\"btn-secondary flex items-center gap-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -68,7 +68,7 @@ func ReportsHeader() templ.Component {
 			templ_7745c5c3_Var2 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<header class=\"border-b\" style=\"border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);\"><div class=\"max-w-4xl mx-auto px-4 py-4 flex items-center justify-between\"><a href=\"/\" class=\"font-display text-2xl font-semibold tracking-tight\" style=\"color: var(--color-ink);\">Learnd</a><nav class=\"flex items-center gap-4\"><a href=\"/\" class=\"btn-secondary flex items-center gap-2\">")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<header class=\"border-b\" style=\"border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);\"><div class=\"max-w-4xl mx-auto px-4 py-4 flex items-center justify-between\"><a href=\"/\" class=\"font-display text-2xl font-semibold tracking-tight\" style=\"color: var(--color-ink);\">learnd</a><nav class=\"flex items-center gap-4\"><a href=\"/\" class=\"btn-secondary flex items-center gap-2\">")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
