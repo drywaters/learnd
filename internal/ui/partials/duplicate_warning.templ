@@ -1,0 +1,27 @@
+package partials
+
+import (
+	"time"
+
+	"github.com/drywaters/learnd/internal/ui"
+)
+
+templ DuplicateWarning(show bool, title string, createdAt time.Time) {
+	<div id="duplicate-warning" hx-swap-oob="innerHTML">
+		if show {
+			<div class="duplicate-warning">
+				<div class="duplicate-warning__text">
+					<span class="duplicate-warning__label">Duplicate detected.</span>
+					if title != "" {
+						<span class="duplicate-warning__detail">"{ title }" was saved on { ui.FormatDate(createdAt) }.</span>
+					} else {
+						<span class="duplicate-warning__detail">This link was saved on { ui.FormatDate(createdAt) }.</span>
+					}
+				</div>
+				<button type="submit" name="allow_duplicate" value="1" class="duplicate-warning__button">
+					Add anyway
+				</button>
+			</div>
+		}
+	</div>
+}

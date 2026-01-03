@@ -1,0 +1,314 @@
+@import "tailwindcss";
+@config "../tailwind.config.js";
+@source "../internal/ui";
+
+/* =============================================================================
+   BASE LAYER
+   Root variables, global resets, and foundational element styles
+   ============================================================================= */
+
+@layer base {
+	:root {
+		--color-parchment: #FAF8F5;
+		--color-cream: #F5F2ED;
+		--color-warm-gray: #E8E4DE;
+		--color-ink: #2C2825;
+		--color-ink-light: #5C5652;
+		--color-ink-lighter: #8A8580;
+		--color-accent: #B8860B;
+		--color-accent-light: #DAA520;
+		--color-success: #3D7A4A;
+		--color-error: #A63D3D;
+		--color-pending: #B8860B;
+
+		--font-display: 'Fraunces', Georgia, serif;
+		--font-body: 'DM Sans', system-ui, sans-serif;
+		--font-mono: 'JetBrains Mono', monospace;
+
+		--shadow-sm: 0 1px 2px rgba(44, 40, 37, 0.04);
+		--shadow-md: 0 4px 12px rgba(44, 40, 37, 0.08);
+		--shadow-lg: 0 8px 24px rgba(44, 40, 37, 0.12);
+	}
+
+	* {
+		font-family: var(--font-body);
+	}
+
+	body {
+		background-color: var(--color-parchment);
+		color: var(--color-ink);
+		min-height: 100vh;
+		background-image:
+			radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.03) 0%, transparent 50%),
+			radial-gradient(ellipse at 80% 100%, rgba(184, 134, 11, 0.02) 0%, transparent 50%);
+	}
+}
+
+/* =============================================================================
+   COMPONENTS LAYER
+   Reusable component styles: buttons, inputs, cards, badges, etc.
+   ============================================================================= */
+
+@layer components {
+	/* Typography utilities */
+	.font-display {
+		font-family: var(--font-display);
+	}
+
+	.font-mono {
+		font-family: var(--font-mono);
+	}
+
+	/* Input fields */
+	.input-field {
+		background: white;
+		border: 1px solid var(--color-warm-gray);
+		border-radius: 8px;
+		padding: 0.75rem 1rem;
+		font-size: 1rem;
+		transition: all 0.2s ease;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.input-field:focus {
+		outline: none;
+		border-color: var(--color-accent);
+		box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1), var(--shadow-md);
+	}
+
+	.input-field::placeholder {
+		color: var(--color-ink-lighter);
+	}
+
+	.input-url {
+		font-family: var(--font-mono);
+		font-size: 1.125rem;
+		padding: 1rem 1.25rem;
+	}
+
+	/* Buttons */
+	.btn-primary {
+		background: var(--color-ink);
+		color: var(--color-parchment);
+		font-weight: 500;
+		padding: 0.875rem 2rem;
+		border-radius: 8px;
+		transition: all 0.2s ease;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.btn-primary:hover {
+		background: var(--color-ink-light);
+		transform: translateY(-1px);
+		box-shadow: var(--shadow-md);
+	}
+
+	.btn-primary:active {
+		transform: translateY(0);
+	}
+
+	.btn-secondary {
+		background: transparent;
+		color: var(--color-ink);
+		border: 1px solid var(--color-warm-gray);
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
+		font-size: 0.875rem;
+		transition: all 0.2s ease;
+	}
+
+	.btn-secondary:hover {
+		background: var(--color-cream);
+		border-color: var(--color-ink-lighter);
+	}
+
+	/* Status indicators */
+	.status-pending {
+		color: var(--color-pending);
+	}
+
+	.status-ok {
+		color: var(--color-success);
+	}
+
+	.status-failed {
+		color: var(--color-error);
+	}
+
+	/* Badges */
+	.badge {
+		font-size: 0.6875rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		text-transform: uppercase;
+		padding: 0.25rem 0.625rem;
+		border-radius: 4px;
+	}
+
+	.badge-youtube {
+		background: #FEE2E2;
+		color: #991B1B;
+	}
+
+	.badge-podcast {
+		background: #E0E7FF;
+		color: #3730A3;
+	}
+
+	.badge-article {
+		background: #D1FAE5;
+		color: #065F46;
+	}
+
+	.badge-doc {
+		background: #FEF3C7;
+		color: #92400E;
+	}
+
+	.badge-other {
+		background: var(--color-warm-gray);
+		color: var(--color-ink-light);
+	}
+
+	.badge-duplicate {
+		background: #FDECC8;
+		color: #8A5A00;
+	}
+
+	/* Tags */
+	.tag {
+		font-size: 0.75rem;
+		color: var(--color-ink-light);
+		background: var(--color-cream);
+		padding: 0.125rem 0.5rem;
+		border-radius: 4px;
+		border: 1px solid var(--color-warm-gray);
+	}
+
+	/* Duplicate warning component */
+	.duplicate-warning {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.75rem 1rem;
+		border-radius: 10px;
+		border: 1px solid #E6C68C;
+		background: #FFF6E5;
+		color: #7A4A00;
+		box-shadow: var(--shadow-sm);
+	}
+
+	.duplicate-warning__text {
+		font-size: 0.75rem;
+		line-height: 1.4;
+	}
+
+	.duplicate-warning__label {
+		font-weight: 600;
+		margin-right: 0.35rem;
+	}
+
+	.duplicate-warning__detail {
+		color: #8A5A00;
+	}
+
+	.duplicate-warning__button {
+		background: var(--color-ink);
+		color: var(--color-parchment);
+		padding: 0.4rem 0.75rem;
+		border-radius: 6px;
+		font-size: 0.75rem;
+		transition: all 0.2s ease;
+		white-space: nowrap;
+	}
+
+	.duplicate-warning__button:hover {
+		background: var(--color-ink-light);
+	}
+
+	/* Cards */
+	.card {
+		background: white;
+		border: 1px solid var(--color-warm-gray);
+		border-radius: 12px;
+		box-shadow: var(--shadow-sm);
+	}
+
+	/* Divider */
+	.divider {
+		height: 1px;
+		background: linear-gradient(90deg, transparent, var(--color-warm-gray), transparent);
+	}
+
+	/* Entry row */
+	.entry-row {
+		transition: all 0.15s ease;
+	}
+
+	.entry-row:hover {
+		background: var(--color-cream);
+	}
+
+	/* HTMX loading states */
+	.htmx-request .htmx-indicator {
+		display: inline-block;
+	}
+
+	.htmx-indicator {
+		display: none;
+	}
+
+	/* Toast notifications */
+	.toast-enter {
+		animation: slideIn 0.3s ease forwards;
+	}
+
+	.toast-exit {
+		animation: slideOut 0.3s ease forwards;
+	}
+}
+
+/* =============================================================================
+   UTILITIES LAYER
+   Single-purpose utility classes and animations
+   ============================================================================= */
+
+@layer utilities {
+	.animate-spin {
+		animation: spin 1s linear infinite;
+	}
+}
+
+/* =============================================================================
+   KEYFRAMES
+   Animation definitions (outside @layer as they're global)
+   ============================================================================= */
+
+@keyframes slideIn {
+	from {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+	to {
+		transform: translateX(0);
+		opacity: 1;
+	}
+}
+
+@keyframes slideOut {
+	from {
+		transform: translateX(0);
+		opacity: 1;
+	}
+	to {
+		transform: translateX(100%);
+		opacity: 0;
+	}
+}
+
+@keyframes spin {
+	to {
+		transform: rotate(360deg);
+	}
+}

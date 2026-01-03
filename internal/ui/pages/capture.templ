@@ -1,0 +1,153 @@
+package pages
+
+import (
+	"fmt"
+
+	"github.com/drywaters/learnd/internal/ui"
+	"github.com/drywaters/learnd/internal/ui/components"
+	"github.com/drywaters/learnd/internal/ui/layout"
+	"github.com/drywaters/learnd/internal/ui/partials"
+)
+
+templ CapturePage(entries []ui.EntryView) {
+	@layout.Base("Capture - Learnd") {
+		<div class="min-h-screen">
+			@components.CaptureHeader()
+
+			<main class="max-w-4xl mx-auto px-4 py-8">
+				<!-- Capture Form -->
+				<div class="card p-6 md:p-8 mb-8">
+					<form
+						id="capture-form"
+						hx-post="/api/entries"
+						hx-target="#entry-list"
+						hx-swap="afterbegin"
+						hx-on::after-request="if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }"
+					>
+						<!-- URL and Tags Row -->
+						<div class="flex flex-col md:flex-row gap-4 mb-4">
+							<div class="flex-grow">
+								<label for="url" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+									URL
+								</label>
+								<input
+									type="url"
+									id="url"
+									name="url"
+									class="input-field input-url w-full"
+									placeholder="https://..."
+									autocomplete="off"
+									autofocus
+									required
+								/>
+							</div>
+							<div class="md:w-48">
+								<label for="tags" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+									Tags
+								</label>
+								<input
+									type="text"
+									id="tags"
+									name="tags"
+									class="input-field w-full"
+									placeholder="ai, tech, js"
+									autocomplete="off"
+								/>
+							</div>
+						</div>
+
+						<div id="duplicate-warning" class="mb-4"></div>
+
+						<!-- Optional Fields Row -->
+						<div class="flex flex-col sm:flex-row gap-4 mb-6">
+							<div class="sm:w-32">
+								<label for="time_spent" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+									Time (min)
+								</label>
+								<input
+									type="number"
+									id="time_spent"
+									name="time_spent"
+									class="input-field w-full text-sm"
+									placeholder="30"
+									min="1"
+								/>
+							</div>
+							<div class="sm:w-32">
+								<label for="quantity" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+									Quantity
+								</label>
+								<input
+									type="number"
+									id="quantity"
+									name="quantity"
+									class="input-field w-full text-sm"
+									placeholder="e.g. pages"
+									min="1"
+								/>
+							</div>
+							<div class="flex-grow">
+								<label for="notes" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+									Notes
+								</label>
+								<input
+									type="text"
+									id="notes"
+									name="notes"
+									class="input-field w-full text-sm"
+									placeholder="Optional notes..."
+								/>
+							</div>
+						</div>
+
+						<!-- Submit Button -->
+						<div class="flex justify-end">
+							<button type="submit" class="btn-primary flex items-center gap-2">
+								<span class="htmx-indicator animate-spin">
+									@components.SpinnerIcon()
+								</span>
+								<span>Save Entry</span>
+							</button>
+						</div>
+					</form>
+				</div>
+
+				<!-- Entries Section -->
+				<div>
+					<div class="flex items-center justify-between mb-4">
+						<h2 class="font-display text-lg font-medium" style="color: var(--color-ink);">
+							Recent Entries
+						</h2>
+						<span id="entry-count" class="text-sm" style="color: var(--color-ink-lighter);">
+							{ fmt.Sprintf("%d", len(entries)) }
+							if len(entries) == 1 {
+								entry
+							} else {
+								entries
+							}
+						</span>
+					</div>
+
+					<div class="card overflow-hidden">
+						<div id="entry-list" class="divide-y" style="border-color: var(--color-warm-gray);">
+							if len(entries) > 0 {
+								for _, entry := range entries {
+									@partials.EntryRow(entry)
+								}
+							} else {
+								@emptyStateInline()
+							}
+						</div>
+					</div>
+				</div>
+			</main>
+		</div>
+	}
+}
+
+templ emptyStateInline() {
+	<div id="empty-state" class="p-8 text-center" style="color: var(--color-ink-lighter);">
+		@components.BookIcon()
+		<p class="text-sm">No entries yet. Start capturing!</p>
+	</div>
+}

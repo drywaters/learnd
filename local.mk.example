@@ -1,0 +1,10 @@
+# Copy this file to local.mk and fill in your values
+# local.mk is gitignored
+
+export DATABASE_URL=postgres://user:password@localhost:5432/learnd?sslmode=disable
+export API_KEY_HASH=$$2a$$10$$yourhashedkeyhere  # Generate with: make gen-api-key (use $$ not $ for make)
+export PORT=4500
+export GEMINI_API_KEY=your-gemini-api-key
+export YOUTUBE_API_KEY=your-youtube-api-key
+export LOG_LEVEL=debug
+export SECURE_COOKIES=false  # Set to false for local HTTP dev, defaults to true for production HTTPS

@@ -1,0 +1,86 @@
+package server
+
+import (
+	"net/http"
+
+	"github.com/drywaters/learnd/internal/config"
+	"github.com/drywaters/learnd/internal/handler"
+	"github.com/drywaters/learnd/internal/middleware"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/session"
+	"github.com/go-chi/chi/v5"
+	chimw "github.com/go-chi/chi/v5/middleware"
+)
+
+// Server represents the HTTP server
+type Server struct {
+	cfg              *config.Config
+	entryRepo        *repository.EntryRepository
+	summaryCacheRepo *repository.SummaryCacheRepository
+	sessions         *session.Store
+}
+
+// New creates a new Server
+func New(cfg *config.Config, entryRepo *repository.EntryRepository, summaryCacheRepo *repository.SummaryCacheRepository, sessions *session.Store) *Server {
+	return &Server{
+		cfg:              cfg,
+		entryRepo:        entryRepo,
+		summaryCacheRepo: summaryCacheRepo,
+		sessions:         sessions,
+	}
+}
+
+// Router returns the configured chi router
+func (s *Server) Router() http.Handler {
+	r := chi.NewRouter()
+
+	// Middleware
+	r.Use(chimw.RequestID)
+	r.Use(chimw.RealIP)
+	r.Use(middleware.Logger)
+	r.Use(chimw.Recoverer)
+
+	// Static files
+	fileServer := http.FileServer(http.Dir("static"))
+	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+
+	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+
+	// Auth handlers
+	authHandler := handler.NewAuthHandler(s.cfg.APIKeyHash, s.sessions, s.cfg.SecureCookies)
+	r.Get("/login", authHandler.LoginPage)
+	r.Post("/login", authHandler.Login)
+	r.Post("/logout", authHandler.Logout)
+
+	// Protected routes
+	r.Group(func(r chi.Router) {
+		r.Use(middleware.Auth(s.sessions, s.cfg.SecureCookies))
+
+		// Capture handler
+		captureHandler := handler.NewCaptureHandler(s.entryRepo)
+		r.Get("/", captureHandler.CapturePage)
+
+		// Entry API
+		entryHandler := handler.NewEntryHandler(s.entryRepo)
+		r.Post("/api/entries", entryHandler.Create)
+		r.Get("/api/entries", entryHandler.List)
+		r.Get("/api/entries/{id}", entryHandler.Get)
+		r.Put("/api/entries/{id}", entryHandler.Update)
+		r.Delete("/api/entries/{id}", entryHandler.Delete)
+		r.Post("/api/entries/{id}/refresh-enrichment", entryHandler.RefreshEnrichment)
+		r.Post("/api/entries/{id}/refresh-summary", entryHandler.RefreshSummary)
+		r.Get("/entries/{id}/status", entryHandler.Status)
+
+		// Report handler
+		reportHandler := handler.NewReportHandler(s.entryRepo)
+		r.Get("/reports", reportHandler.ReportsPage)
+		r.Get("/api/reports", reportHandler.GetReport)
+		r.Get("/api/reports/export", reportHandler.ExportCSV)
+	})
+
+	return r
+}
