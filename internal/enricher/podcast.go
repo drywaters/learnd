@@ -31,9 +31,7 @@ type PodcastEnricher struct {
 // NewPodcastEnricher creates a new podcast enricher
 func NewPodcastEnricher() *PodcastEnricher {
 	return &PodcastEnricher{
-		client: &http.Client{
-			Timeout: 15 * time.Second,
-		},
+		client: newSafeHTTPClient(15 * time.Second),
 	}
 }
 
@@ -41,13 +39,20 @@ func (e *PodcastEnricher) Name() string  { return "podcast" }
 func (e *PodcastEnricher) Priority() int { return 20 }
 
 func (e *PodcastEnricher) CanHandle(rawURL string) bool {
-	return strings.Contains(rawURL, "podcasts.apple.com")
+	parsedURL, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	return strings.EqualFold(parsedURL.Hostname(), "podcasts.apple.com")
 }
 
 func (e *PodcastEnricher) Enrich(ctx context.Context, rawURL string) (*Result, error) {
-	parsedURL, err := url.Parse(rawURL)
+	parsedURL, err := validateFetchURL(ctx, rawURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid URL: %w", err)
+		return nil, err
+	}
+	if !strings.EqualFold(parsedURL.Hostname(), "podcasts.apple.com") {
+		return nil, fmt.Errorf("unsupported host: %s", parsedURL.Hostname())
 	}
 
 	// Extract podcast and episode IDs
@@ -62,7 +67,7 @@ func (e *PodcastEnricher) Enrich(ctx context.Context, rawURL string) (*Result, e
 	}
 
 	// Fetch the page and parse HTML for metadata
-	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", parsedURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -93,7 +98,7 @@ func (e *PodcastEnricher) Enrich(ctx context.Context, rawURL string) (*Result, e
 
 	result := &Result{
 		CanonicalURL: resp.Request.URL.String(),
-		Domain:       parsedURL.Host,
+		Domain:       parsedURL.Hostname(),
 		SourceType:   model.SourceTypePodcast,
 		Metadata: map[string]interface{}{
 			"podcast_id": podcastID,
