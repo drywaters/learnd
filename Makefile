@@ -40,7 +40,7 @@ test: ## Run Go tests
 	go test -v ./...
 
 # Docker (production)
-docker-buildx: ## Build and push multi-arch Docker image using buildx
+docker-buildx: templ tail-prod ## Build and push multi-arch Docker image using buildx
 	docker buildx build \
 		--platform $(PLATFORMS) \
 		--tag $(REGISTRY)/$(IMAGE_REPO):$(TAG) \
