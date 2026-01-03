@@ -34,6 +34,8 @@ func Load() (*Config, error) {
 	if cfg.APIKeyHash, err = getEnvOrFile("API_KEY_HASH", "/run/secrets/learnd_api_key_hash"); err != nil {
 		return nil, err
 	}
+	// Normalize bcrypt hash: un-escape $$ to $ (handles both Makefile $$ and Docker Swarm $ formats)
+	cfg.APIKeyHash = normalizeBcryptHash(cfg.APIKeyHash)
 	if cfg.GeminiAPIKey, err = getEnvOrFile("GEMINI_API_KEY", "/run/secrets/learnd_gemini_api_key"); err != nil {
 		return nil, err
 	}
@@ -122,4 +124,12 @@ func readSecret(path, name string) (string, error) {
 		return "", fmt.Errorf("config: %s (%s) is empty", name, path)
 	}
 	return value, nil
+}
+
+// normalizeBcryptHash normalizes bcrypt hash by replacing $$ with $.
+// This allows the same hash format to work in both Makefile environments (which use $$)
+// and Docker Swarm secrets (which use $). The function is idempotent - already
+// normalized hashes remain unchanged.
+func normalizeBcryptHash(hash string) string {
+	return strings.ReplaceAll(hash, "$$", "$")
 }
