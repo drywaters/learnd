@@ -41,8 +41,13 @@ type Registry struct {
 	fallback  Enricher
 }
 
-// NewRegistry creates a new enricher registry with a fallback enricher
+// NewRegistry creates a new enricher registry with a fallback enricher.
+// The fallback enricher is used when no registered enricher can handle a URL.
+// Panics if fallback is nil.
 func NewRegistry(fallback Enricher) *Registry {
+	if fallback == nil {
+		panic("fallback enricher must not be nil")
+	}
 	return &Registry{
 		enrichers: make([]Enricher, 0),
 		fallback:  fallback,

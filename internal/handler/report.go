@@ -63,70 +63,41 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 		end = time.Now()
 	}
 
-	const pageSize = 1000
-
-	// Get all entries in the date range and compute aggregations
-	tagCounts := make(map[string]int)
-	tagTime := make(map[string]int)
-	typeCounts := make(map[string]int)
-	typeTime := make(map[string]int)
-	totalEntries := 0
-	totalTime := 0
-
-	opts := repository.ListOptions{
-		Limit:  pageSize,
-		Offset: 0,
-		Start:  &start,
-		End:    &end,
+	// Get totals from database
+	totals, err := h.entryRepo.GetReportTotals(ctx, start, end)
+	if err != nil {
+		slog.Error("failed to get report totals", "handler", "GetReport", "error", err)
+		http.Error(w, "Failed to get report", http.StatusInternalServerError)
+		return
 	}
 
-	for {
-		entries, err := h.entryRepo.List(ctx, opts)
-		if err != nil {
-			slog.Error("failed to list entries", "handler", "GetReport", "offset", opts.Offset, "error", err)
-			http.Error(w, "Failed to get entries", http.StatusInternalServerError)
-			return
-		}
-		if len(entries) == 0 {
-			break
-		}
+	// Get aggregations by tag from database
+	tagAggs, err := h.entryRepo.AggregateByTag(ctx, start, end)
+	if err != nil {
+		slog.Error("failed to aggregate by tag", "handler", "GetReport", "error", err)
+		http.Error(w, "Failed to get report", http.StatusInternalServerError)
+		return
+	}
 
-		for _, entry := range entries {
-			totalEntries++
-			trackedSeconds := reportTrackedSeconds(entry)
-			if trackedSeconds > 0 {
-				totalTime += trackedSeconds
-			}
-
-			// Aggregate by tags
-			for _, tag := range entry.Tags {
-				tagCounts[tag]++
-				if trackedSeconds > 0 {
-					tagTime[tag] += trackedSeconds
-				}
-			}
-
-			// Aggregate by type
-			typeCounts[string(entry.SourceType)]++
-			if trackedSeconds > 0 {
-				typeTime[string(entry.SourceType)] += trackedSeconds
-			}
-		}
-
-		opts.Offset += len(entries)
+	// Get aggregations by type from database
+	typeAggs, err := h.entryRepo.AggregateByType(ctx, start, end)
+	if err != nil {
+		slog.Error("failed to aggregate by type", "handler", "GetReport", "error", err)
+		http.Error(w, "Failed to get report", http.StatusInternalServerError)
+		return
 	}
 
 	// Build report data
 	var tagReport []partials.TagReport
 	totalTagEntries := 0
 	totalTagTime := 0
-	for tag, count := range tagCounts {
-		minutes := minutesFromSeconds(tagTime[tag])
-		totalTagEntries += count
+	for _, agg := range tagAggs {
+		minutes := minutesFromSeconds(agg.TimeSeconds)
+		totalTagEntries += agg.Count
 		totalTagTime += minutes
 		tagReport = append(tagReport, partials.TagReport{
-			Tag:   tag,
-			Count: count,
+			Tag:   agg.Tag,
+			Count: agg.Count,
 			Time:  minutes,
 		})
 	}
@@ -134,13 +105,13 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	var typeReport []partials.TypeReport
 	totalTypeEntries := 0
 	totalTypeTime := 0
-	for typ, count := range typeCounts {
-		minutes := minutesFromSeconds(typeTime[typ])
-		totalTypeEntries += count
+	for _, agg := range typeAggs {
+		minutes := minutesFromSeconds(agg.TimeSeconds)
+		totalTypeEntries += agg.Count
 		totalTypeTime += minutes
 		typeReport = append(typeReport, partials.TypeReport{
-			Type:  typ,
-			Count: count,
+			Type:  agg.Type,
+			Count: agg.Count,
 			Time:  minutes,
 		})
 	}
@@ -148,8 +119,8 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	data := partials.ReportData{
 		Start:            start.Format("2006-01-02"),
 		End:              end.Format("2006-01-02"),
-		TotalEntries:     totalEntries,
-		TotalTime:        minutesFromSeconds(totalTime),
+		TotalEntries:     totals.TotalEntries,
+		TotalTime:        minutesFromSeconds(totals.TotalTimeSeconds),
 		TotalTagEntries:  totalTagEntries,
 		TotalTagTime:     totalTagTime,
 		TotalTypeEntries: totalTypeEntries,

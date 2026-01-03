@@ -137,6 +137,9 @@ func run() error {
 	// Stop background worker
 	bgWorker.Stop()
 
+	// Stop session store cleanup goroutine
+	sessions.Close()
+
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 

@@ -12,6 +12,8 @@ type Store struct {
 	mu       sync.RWMutex
 	sessions map[string]time.Time // token -> expiration time
 	ttl      time.Duration
+	done     chan struct{}
+	wg       sync.WaitGroup
 }
 
 // NewStore creates a new session store with the given TTL
@@ -19,8 +21,10 @@ func NewStore(ttl time.Duration) *Store {
 	s := &Store{
 		sessions: make(map[string]time.Time),
 		ttl:      ttl,
+		done:     make(chan struct{}),
 	}
 	// Start background cleanup goroutine
+	s.wg.Add(1)
 	go s.cleanup()
 	return s
 }
@@ -62,7 +66,7 @@ func (s *Store) Delete(token string) {
 // Refresh extends the expiration of a valid token
 func (s *Store) Refresh(token string) {
 	s.mu.Lock()
-	if _, exists := s.sessions[token]; exists {
+	if expiry, exists := s.sessions[token]; exists && time.Now().Before(expiry) {
 		s.sessions[token] = time.Now().Add(s.ttl)
 	}
 	s.mu.Unlock()
@@ -70,15 +74,28 @@ func (s *Store) Refresh(token string) {
 
 // cleanup periodically removes expired sessions
 func (s *Store) cleanup() {
+	defer s.wg.Done()
 	ticker := time.NewTicker(s.ttl / 2)
-	for range ticker.C {
-		now := time.Now()
-		s.mu.Lock()
-		for token, expiry := range s.sessions {
-			if now.After(expiry) {
-				delete(s.sessions, token)
+	defer ticker.Stop()
+	for {
+		select {
+		case <-s.done:
+			return
+		case <-ticker.C:
+			now := time.Now()
+			s.mu.Lock()
+			for token, expiry := range s.sessions {
+				if now.After(expiry) {
+					delete(s.sessions, token)
+				}
 			}
+			s.mu.Unlock()
 		}
-		s.mu.Unlock()
 	}
+}
+
+// Close signals the cleanup goroutine to stop and waits for it to finish
+func (s *Store) Close() {
+	close(s.done)
+	s.wg.Wait()
 }

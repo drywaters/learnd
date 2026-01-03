@@ -20,15 +20,16 @@ func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.H
 
 			// O(1) token lookup instead of expensive bcrypt comparison
 			if !sessions.Valid(cookie.Value) {
-				// Invalid/expired session, clear cookie and redirect
-				http.SetCookie(w, &http.Cookie{
-					Name:     cookieName,
-					Value:    "",
-					Path:     "/",
-					MaxAge:   -1,
-					HttpOnly: true,
-					Secure:   secureCookies,
-				})
+			// Invalid/expired session, clear cookie and redirect
+			http.SetCookie(w, &http.Cookie{
+				Name:     cookieName,
+				Value:    "",
+				Path:     "/",
+				MaxAge:   -1,
+				HttpOnly: true,
+				Secure:   secureCookies,
+				SameSite: http.SameSiteStrictMode,
+			})
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}

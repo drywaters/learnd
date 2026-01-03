@@ -67,39 +67,11 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// Parse tags from comma-separated string
-	tagsStr := r.FormValue("tags")
-	var tags []string
-	if tagsStr != "" {
-		for _, tag := range strings.Split(tagsStr, ",") {
-			tag = strings.TrimSpace(tag)
-			if tag != "" {
-				tags = append(tags, tag)
-			}
-		}
-	}
-
 	// Parse optional fields
-	var timeSpent *int
-	if ts := r.FormValue("time_spent"); ts != "" {
-		if v, err := strconv.Atoi(ts); err == nil && v > 0 {
-			// Convert minutes to seconds
-			seconds := v * 60
-			timeSpent = &seconds
-		}
-	}
-
-	var quantity *int
-	if q := r.FormValue("quantity"); q != "" {
-		if v, err := strconv.Atoi(q); err == nil && v > 0 {
-			quantity = &v
-		}
-	}
-
-	var notes *string
-	if n := strings.TrimSpace(r.FormValue("notes")); n != "" {
-		notes = &n
-	}
+	tags := parseTags(r.FormValue("tags"))
+	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
+	quantity := parseQuantity(r.FormValue("quantity"))
+	notes := parseNotes(r.FormValue("notes"))
 
 	input := &model.CreateEntryInput{
 		SourceURL:        url,
@@ -185,7 +157,11 @@ func (h *EntryHandler) List(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(entries)
+	if err := json.NewEncoder(w).Encode(entries); err != nil {
+		slog.Error("failed to encode entries response", "handler", "List", "error", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Get returns a single entry
@@ -211,7 +187,11 @@ func (h *EntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(entry)
+	if err := json.NewEncoder(w).Encode(entry); err != nil {
+		slog.Error("failed to encode entry response", "handler", "Get", "id", id, "error", err)
+		http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		return
+	}
 }
 
 // Update updates an entry
@@ -230,38 +210,11 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse tags
-	tagsStr := r.FormValue("tags")
-	var tags []string
-	if tagsStr != "" {
-		for _, tag := range strings.Split(tagsStr, ",") {
-			tag = strings.TrimSpace(tag)
-			if tag != "" {
-				tags = append(tags, tag)
-			}
-		}
-	}
-
 	// Parse optional fields
-	var timeSpent *int
-	if ts := r.FormValue("time_spent"); ts != "" {
-		if v, err := strconv.Atoi(ts); err == nil && v > 0 {
-			seconds := v * 60
-			timeSpent = &seconds
-		}
-	}
-
-	var quantity *int
-	if q := r.FormValue("quantity"); q != "" {
-		if v, err := strconv.Atoi(q); err == nil && v > 0 {
-			quantity = &v
-		}
-	}
-
-	var notes *string
-	if n := strings.TrimSpace(r.FormValue("notes")); n != "" {
-		notes = &n
-	}
+	tags := parseTags(r.FormValue("tags"))
+	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
+	quantity := parseQuantity(r.FormValue("quantity"))
+	notes := parseNotes(r.FormValue("notes"))
 
 	input := &model.UpdateEntryInput{
 		Tags:             tags,
@@ -454,4 +407,53 @@ func (h *EntryHandler) htmxToast(w http.ResponseWriter, msg string, entryID *uui
 	if data, err := json.Marshal(payload); err == nil {
 		w.Header().Set("HX-Trigger", string(data))
 	}
+}
+
+// parseTags parses a comma-separated string into a slice of trimmed, non-empty tags.
+func parseTags(tagsStr string) []string {
+	var tags []string
+	if tagsStr != "" {
+		for _, tag := range strings.Split(tagsStr, ",") {
+			tag = strings.TrimSpace(tag)
+			if tag != "" {
+				tags = append(tags, tag)
+			}
+		}
+	}
+	return tags
+}
+
+// parseTimeSpentMinutes parses a time spent value in minutes and returns seconds.
+// Returns nil if the input is empty, not a valid integer, or not positive.
+func parseTimeSpentMinutes(ts string) *int {
+	if ts == "" {
+		return nil
+	}
+	if v, err := strconv.Atoi(ts); err == nil && v > 0 {
+		seconds := v * 60
+		return &seconds
+	}
+	return nil
+}
+
+// parseQuantity parses a quantity value and returns a pointer to the integer.
+// Returns nil if the input is empty, not a valid integer, or not positive.
+func parseQuantity(q string) *int {
+	if q == "" {
+		return nil
+	}
+	if v, err := strconv.Atoi(q); err == nil && v > 0 {
+		return &v
+	}
+	return nil
+}
+
+// parseNotes trims the notes string and returns a pointer if non-empty.
+// Returns nil if the trimmed result is empty.
+func parseNotes(n string) *string {
+	trimmed := strings.TrimSpace(n)
+	if trimmed == "" {
+		return nil
+	}
+	return &trimmed
 }

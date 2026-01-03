@@ -461,6 +461,99 @@ func (r *EntryRepository) ResetSummary(ctx context.Context, id uuid.UUID) error 
 	return nil
 }
 
+// TagAggregation represents aggregated stats for a tag
+type TagAggregation struct {
+	Tag         string
+	Count       int
+	TimeSeconds int
+}
+
+// TypeAggregation represents aggregated stats for a source type
+type TypeAggregation struct {
+	Type        string
+	Count       int
+	TimeSeconds int
+}
+
+// ReportTotals represents total counts for a date range
+type ReportTotals struct {
+	TotalEntries    int
+	TotalTimeSeconds int
+}
+
+// AggregateByTag returns entry counts and time aggregated by tag for a date range
+func (r *EntryRepository) AggregateByTag(ctx context.Context, start, end time.Time) ([]TagAggregation, error) {
+	query := `
+		SELECT tag, COUNT(*), COALESCE(SUM(COALESCE(time_spent_seconds, runtime_seconds, 0)), 0)::int
+		FROM entries, unnest(tags) AS tag
+		WHERE created_at >= $1 AND created_at <= $2
+		GROUP BY tag
+		ORDER BY COUNT(*) DESC
+	`
+
+	rows, err := r.pool.Query(ctx, query, start, end)
+	if err != nil {
+		return nil, fmt.Errorf("failed to aggregate by tag: %w", err)
+	}
+	defer rows.Close()
+
+	var results []TagAggregation
+	for rows.Next() {
+		var agg TagAggregation
+		if err := rows.Scan(&agg.Tag, &agg.Count, &agg.TimeSeconds); err != nil {
+			return nil, fmt.Errorf("failed to scan tag aggregation: %w", err)
+		}
+		results = append(results, agg)
+	}
+
+	return results, nil
+}
+
+// AggregateByType returns entry counts and time aggregated by source type for a date range
+func (r *EntryRepository) AggregateByType(ctx context.Context, start, end time.Time) ([]TypeAggregation, error) {
+	query := `
+		SELECT source_type, COUNT(*), COALESCE(SUM(COALESCE(time_spent_seconds, runtime_seconds, 0)), 0)::int
+		FROM entries
+		WHERE created_at >= $1 AND created_at <= $2
+		GROUP BY source_type
+		ORDER BY COUNT(*) DESC
+	`
+
+	rows, err := r.pool.Query(ctx, query, start, end)
+	if err != nil {
+		return nil, fmt.Errorf("failed to aggregate by type: %w", err)
+	}
+	defer rows.Close()
+
+	var results []TypeAggregation
+	for rows.Next() {
+		var agg TypeAggregation
+		if err := rows.Scan(&agg.Type, &agg.Count, &agg.TimeSeconds); err != nil {
+			return nil, fmt.Errorf("failed to scan type aggregation: %w", err)
+		}
+		results = append(results, agg)
+	}
+
+	return results, nil
+}
+
+// GetReportTotals returns total entry count and time for a date range
+func (r *EntryRepository) GetReportTotals(ctx context.Context, start, end time.Time) (*ReportTotals, error) {
+	query := `
+		SELECT COUNT(*), COALESCE(SUM(COALESCE(time_spent_seconds, runtime_seconds, 0)), 0)::int
+		FROM entries
+		WHERE created_at >= $1 AND created_at <= $2
+	`
+
+	var totals ReportTotals
+	err := r.pool.QueryRow(ctx, query, start, end).Scan(&totals.TotalEntries, &totals.TotalTimeSeconds)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get report totals: %w", err)
+	}
+
+	return &totals, nil
+}
+
 // normalizeTags lowercases, trims, and dedupes tags
 func normalizeTags(tags []string) []string {
 	seen := make(map[string]bool)
