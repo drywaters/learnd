@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/drywaters/learnd/internal/model"
@@ -231,15 +232,15 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 			}
 
 			writer.Write([]string{
-				entry.CreatedAt.Format("2006-01-02"),
-				entry.SourceURL,
-				title,
-				string(entry.SourceType),
-				tags,
-				timeSpent,
-				quantity,
-				notes,
-				summary,
+				sanitizeCSVField(entry.CreatedAt.Format("2006-01-02")),
+				sanitizeCSVField(entry.SourceURL),
+				sanitizeCSVField(title),
+				sanitizeCSVField(string(entry.SourceType)),
+				sanitizeCSVField(tags),
+				sanitizeCSVField(timeSpent),
+				sanitizeCSVField(quantity),
+				sanitizeCSVField(notes),
+				sanitizeCSVField(summary),
 			})
 		}
 
@@ -274,4 +275,22 @@ func minutesFromSeconds(seconds int) int {
 		return 0
 	}
 	return (seconds + 59) / 60
+}
+
+func sanitizeCSVField(value string) string {
+	if value == "" {
+		return value
+	}
+
+	trimmed := strings.TrimLeft(value, " \t\r\n")
+	if trimmed == "" {
+		return value
+	}
+
+	switch trimmed[0] {
+	case '=', '+', '-', '@':
+		return "'" + value
+	default:
+		return value
+	}
 }

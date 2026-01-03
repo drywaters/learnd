@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"net/url"
 	"strings"
 	"time"
 
@@ -23,9 +22,7 @@ type WebEnricher struct {
 // NewWebEnricher creates a new web enricher
 func NewWebEnricher() *WebEnricher {
 	return &WebEnricher{
-		client: &http.Client{
-			Timeout: 15 * time.Second,
-		},
+		client: newSafeHTTPClient(15 * time.Second),
 	}
 }
 
@@ -34,12 +31,12 @@ func (e *WebEnricher) Priority() int           { return 100 } // Lowest priority
 func (e *WebEnricher) CanHandle(_ string) bool { return true }
 
 func (e *WebEnricher) Enrich(ctx context.Context, rawURL string) (*Result, error) {
-	parsedURL, err := url.Parse(rawURL)
+	parsedURL, err := validateFetchURL(ctx, rawURL)
 	if err != nil {
-		return nil, fmt.Errorf("invalid URL: %w", err)
+		return nil, err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", parsedURL.String(), nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -71,8 +68,8 @@ func (e *WebEnricher) Enrich(ctx context.Context, rawURL string) (*Result, error
 
 	result := &Result{
 		CanonicalURL: resp.Request.URL.String(), // Follow redirects
-		Domain:       parsedURL.Host,
-		SourceType:   classifySourceType(parsedURL.Host, ""),
+		Domain:       parsedURL.Hostname(),
+		SourceType:   classifySourceType(parsedURL.Hostname(), ""),
 		Metadata:     make(map[string]interface{}),
 	}
 
