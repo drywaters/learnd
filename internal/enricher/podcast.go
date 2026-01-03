@@ -31,7 +31,7 @@ type PodcastEnricher struct {
 // NewPodcastEnricher creates a new podcast enricher
 func NewPodcastEnricher() *PodcastEnricher {
 	return &PodcastEnricher{
-		client: newSafeHTTPClient(15 * time.Second),
+		client: newSafeHTTPClient(15*time.Second, "podcasts.apple.com"),
 	}
 }
 
