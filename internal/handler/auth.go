@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 
+	"github.com/drywaters/learnd/internal/ui/pages"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -11,14 +12,12 @@ const cookieName = "learnd_api_key"
 // AuthHandler handles authentication
 type AuthHandler struct {
 	apiKeyHash string
-	templates  TemplateRenderer
 }
 
 // NewAuthHandler creates a new AuthHandler
-func NewAuthHandler(apiKeyHash string, templates TemplateRenderer) *AuthHandler {
+func NewAuthHandler(apiKeyHash string) *AuthHandler {
 	return &AuthHandler{
 		apiKeyHash: apiKeyHash,
-		templates:  templates,
 	}
 }
 
@@ -32,13 +31,8 @@ func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	data := map[string]interface{}{
-		"Error": r.URL.Query().Get("error"),
-	}
-
-	if err := h.templates.RenderPage(w, "login.html", data); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	errorType := r.URL.Query().Get("error")
+	pages.LoginPage(errorType).Render(r.Context(), w)
 }
 
 // Login handles the login form submission

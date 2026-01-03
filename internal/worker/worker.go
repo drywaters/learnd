@@ -9,10 +9,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/enricher"
-	"github.com/danielmerrison/learnd/internal/model"
-	"github.com/danielmerrison/learnd/internal/repository"
-	"github.com/danielmerrison/learnd/internal/summarizer"
+	"github.com/drywaters/learnd/internal/enricher"
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/summarizer"
 )
 
 // Worker processes entries in the background

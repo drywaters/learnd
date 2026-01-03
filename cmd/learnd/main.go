@@ -10,12 +10,12 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/config"
-	"github.com/danielmerrison/learnd/internal/enricher"
-	"github.com/danielmerrison/learnd/internal/repository"
-	"github.com/danielmerrison/learnd/internal/server"
-	"github.com/danielmerrison/learnd/internal/summarizer"
-	"github.com/danielmerrison/learnd/internal/worker"
+	"github.com/drywaters/learnd/internal/config"
+	"github.com/drywaters/learnd/internal/enricher"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/server"
+	"github.com/drywaters/learnd/internal/summarizer"
+	"github.com/drywaters/learnd/internal/worker"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 

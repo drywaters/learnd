@@ -1,0 +1,96 @@
+package pages
+
+import (
+	"github.com/drywaters/learnd/internal/ui/components"
+	"github.com/drywaters/learnd/internal/ui/layout"
+)
+
+templ ReportsPage() {
+	@layout.Base("Reports - Learnd") {
+		<div class="min-h-screen">
+			@components.ReportsHeader()
+
+			<main class="max-w-4xl mx-auto px-4 py-8">
+				<!-- Page Title -->
+				<div class="mb-8">
+					<h1 class="font-display text-2xl font-semibold mb-2" style="color: var(--color-ink);">
+						Reports
+					</h1>
+					<p class="text-sm" style="color: var(--color-ink-lighter);">
+						Review your learning activity over time.
+					</p>
+				</div>
+
+				<!-- Filters Card -->
+				<div class="card p-6 mb-8">
+					<form
+						id="report-form"
+						hx-get="/api/reports"
+						hx-target="#report-results"
+						hx-swap="innerHTML"
+					>
+						<div class="flex flex-col sm:flex-row gap-4 items-end">
+							<div class="flex-grow">
+								<label for="start" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+									Start Date
+								</label>
+								<input
+									type="date"
+									id="start"
+									name="start"
+									class="input-field w-full"
+								/>
+							</div>
+							<div class="flex-grow">
+								<label for="end" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+									End Date
+								</label>
+								<input
+									type="date"
+									id="end"
+									name="end"
+									class="input-field w-full"
+								/>
+							</div>
+							<div class="flex gap-2">
+								<button type="submit" class="btn-primary">
+									Generate Report
+								</button>
+								<a
+									id="export-link"
+									href="/api/reports/export"
+									class="btn-secondary flex items-center gap-2"
+									hx-boost="false"
+								>
+									@components.DownloadIcon()
+									CSV
+								</a>
+							</div>
+						</div>
+					</form>
+				</div>
+
+				<!-- Report Results -->
+				<div id="report-results">
+					<div class="text-center py-12" style="color: var(--color-ink-lighter);">
+						@components.ChartIconLarge()
+						<p class="text-sm">Select a date range to generate a report.</p>
+					</div>
+				</div>
+			</main>
+		</div>
+
+		@reportScript()
+	}
+}
+
+templ reportScript() {
+	<script>
+		// Update export link when form changes
+		document.getElementById('report-form').addEventListener('change', function() {
+			const formData = new FormData(this);
+			const params = new URLSearchParams(formData);
+			document.getElementById('export-link').href = '/api/reports/export?' + params.toString();
+		});
+	</script>
+}

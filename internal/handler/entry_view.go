@@ -3,18 +3,12 @@ package handler
 import (
 	"context"
 
-	"github.com/danielmerrison/learnd/internal/model"
-	"github.com/danielmerrison/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/ui"
 )
 
-// EntryView decorates an entry with UI-only fields.
-type EntryView struct {
-	model.Entry
-	DuplicateCount int
-	SwapOOB        bool
-}
-
-func buildEntryView(ctx context.Context, repo *repository.EntryRepository, entry *model.Entry) EntryView {
+func buildEntryView(ctx context.Context, repo *repository.EntryRepository, entry *model.Entry) ui.EntryView {
 	duplicateCount := 1
 	normalizedURL := entry.NormalizedURL
 	if normalizedURL == "" {
@@ -26,15 +20,15 @@ func buildEntryView(ctx context.Context, repo *repository.EntryRepository, entry
 		}
 	}
 
-	return EntryView{
+	return ui.EntryView{
 		Entry:          *entry,
 		DuplicateCount: duplicateCount,
 		SwapOOB:        false,
 	}
 }
 
-func buildEntryViews(ctx context.Context, repo *repository.EntryRepository, entries []model.Entry) []EntryView {
-	views := make([]EntryView, 0, len(entries))
+func buildEntryViews(ctx context.Context, repo *repository.EntryRepository, entries []model.Entry) []ui.EntryView {
+	views := make([]ui.EntryView, 0, len(entries))
 	if len(entries) == 0 {
 		return views
 	}
@@ -70,7 +64,7 @@ func buildEntryViews(ctx context.Context, repo *repository.EntryRepository, entr
 			}
 		}
 
-		views = append(views, EntryView{
+		views = append(views, ui.EntryView{
 			Entry:          entry,
 			DuplicateCount: duplicateCount,
 			SwapOOB:        false,

@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/model"
 )
 
 // Input contains the data to be summarized

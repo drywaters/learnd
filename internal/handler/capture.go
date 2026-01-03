@@ -3,20 +3,19 @@ package handler
 import (
 	"net/http"
 
-	"github.com/danielmerrison/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/ui/pages"
 )
 
 // CaptureHandler handles the main capture UI
 type CaptureHandler struct {
 	entryRepo *repository.EntryRepository
-	templates TemplateRenderer
 }
 
 // NewCaptureHandler creates a new CaptureHandler
-func NewCaptureHandler(entryRepo *repository.EntryRepository, templates TemplateRenderer) *CaptureHandler {
+func NewCaptureHandler(entryRepo *repository.EntryRepository) *CaptureHandler {
 	return &CaptureHandler{
 		entryRepo: entryRepo,
-		templates: templates,
 	}
 }
 
@@ -33,11 +32,5 @@ func (h *CaptureHandler) CapturePage(w http.ResponseWriter, r *http.Request) {
 
 	entryViews := buildEntryViews(ctx, h.entryRepo, entries)
 
-	data := map[string]interface{}{
-		"Entries": entryViews,
-	}
-
-	if err := h.templates.RenderPage(w, "capture.html", data); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	pages.CapturePage(entryViews).Render(ctx, w)
 }

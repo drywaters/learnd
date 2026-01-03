@@ -6,30 +6,27 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/ui/pages"
+	"github.com/drywaters/learnd/internal/ui/partials"
 )
 
 // ReportHandler handles reporting
 type ReportHandler struct {
 	entryRepo *repository.EntryRepository
-	templates TemplateRenderer
 }
 
 // NewReportHandler creates a new ReportHandler
-func NewReportHandler(entryRepo *repository.EntryRepository, templates TemplateRenderer) *ReportHandler {
+func NewReportHandler(entryRepo *repository.EntryRepository) *ReportHandler {
 	return &ReportHandler{
 		entryRepo: entryRepo,
-		templates: templates,
 	}
 }
 
 // ReportsPage renders the reports page
 func (h *ReportHandler) ReportsPage(w http.ResponseWriter, r *http.Request) {
-	data := map[string]interface{}{}
-
-	if err := h.templates.RenderPage(w, "reports.html", data); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	pages.ReportsPage().Render(r.Context(), w)
 }
 
 // GetReport generates a report for the specified date range
@@ -68,7 +65,6 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	const pageSize = 1000
 
 	// Get all entries in the date range and compute aggregations
-	var filtered []interface{}
 	tagCounts := make(map[string]int)
 	tagTime := make(map[string]int)
 	typeCounts := make(map[string]int)
@@ -95,62 +91,72 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 
 		for _, entry := range entries {
 			totalEntries++
-			if entry.TimeSpentSeconds != nil {
-				totalTime += *entry.TimeSpentSeconds
+			trackedSeconds := reportTrackedSeconds(entry)
+			if trackedSeconds > 0 {
+				totalTime += trackedSeconds
 			}
 
 			// Aggregate by tags
 			for _, tag := range entry.Tags {
 				tagCounts[tag]++
-				if entry.TimeSpentSeconds != nil {
-					tagTime[tag] += *entry.TimeSpentSeconds
+				if trackedSeconds > 0 {
+					tagTime[tag] += trackedSeconds
 				}
 			}
 
 			// Aggregate by type
 			typeCounts[string(entry.SourceType)]++
-			if entry.TimeSpentSeconds != nil {
-				typeTime[string(entry.SourceType)] += *entry.TimeSpentSeconds
+			if trackedSeconds > 0 {
+				typeTime[string(entry.SourceType)] += trackedSeconds
 			}
-
-			filtered = append(filtered, entry)
 		}
 
 		opts.Offset += len(entries)
 	}
 
 	// Build report data
-	var tagReport []map[string]interface{}
+	var tagReport []partials.TagReport
+	totalTagEntries := 0
+	totalTagTime := 0
 	for tag, count := range tagCounts {
-		tagReport = append(tagReport, map[string]interface{}{
-			"tag":   tag,
-			"count": count,
-			"time":  tagTime[tag] / 60, // Convert to minutes
+		minutes := minutesFromSeconds(tagTime[tag])
+		totalTagEntries += count
+		totalTagTime += minutes
+		tagReport = append(tagReport, partials.TagReport{
+			Tag:   tag,
+			Count: count,
+			Time:  minutes,
 		})
 	}
 
-	var typeReport []map[string]interface{}
+	var typeReport []partials.TypeReport
+	totalTypeEntries := 0
+	totalTypeTime := 0
 	for typ, count := range typeCounts {
-		typeReport = append(typeReport, map[string]interface{}{
-			"type":  typ,
-			"count": count,
-			"time":  typeTime[typ] / 60,
+		minutes := minutesFromSeconds(typeTime[typ])
+		totalTypeEntries += count
+		totalTypeTime += minutes
+		typeReport = append(typeReport, partials.TypeReport{
+			Type:  typ,
+			Count: count,
+			Time:  minutes,
 		})
 	}
 
-	data := map[string]interface{}{
-		"Start":        start.Format("2006-01-02"),
-		"End":          end.Format("2006-01-02"),
-		"TotalEntries": totalEntries,
-		"TotalTime":    totalTime / 60, // Minutes
-		"ByTag":        tagReport,
-		"ByType":       typeReport,
-		"Entries":      filtered,
+	data := partials.ReportData{
+		Start:            start.Format("2006-01-02"),
+		End:              end.Format("2006-01-02"),
+		TotalEntries:     totalEntries,
+		TotalTime:        minutesFromSeconds(totalTime),
+		TotalTagEntries:  totalTagEntries,
+		TotalTagTime:     totalTagTime,
+		TotalTypeEntries: totalTypeEntries,
+		TotalTypeTime:    totalTypeTime,
+		ByTag:            tagReport,
+		ByType:           typeReport,
 	}
 
-	if err := h.templates.RenderPartial(w, "report_results.html", data); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	partials.ReportResults(data).Render(ctx, w)
 }
 
 // ExportCSV exports entries as CSV
@@ -231,8 +237,8 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 			}
 
 			timeSpent := ""
-			if entry.TimeSpentSeconds != nil {
-				timeSpent = fmt.Sprintf("%d", *entry.TimeSpentSeconds/60)
+			if trackedSeconds := reportTrackedSeconds(entry); trackedSeconds > 0 {
+				timeSpent = fmt.Sprintf("%d", minutesFromSeconds(trackedSeconds))
 			}
 
 			quantity := ""
@@ -265,4 +271,21 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 
 		opts.Offset += len(entries)
 	}
+}
+
+func reportTrackedSeconds(entry model.Entry) int {
+	if entry.TimeSpentSeconds != nil && *entry.TimeSpentSeconds > 0 {
+		return *entry.TimeSpentSeconds
+	}
+	if entry.RuntimeSeconds != nil && *entry.RuntimeSeconds > 0 {
+		return *entry.RuntimeSeconds
+	}
+	return 0
+}
+
+func minutesFromSeconds(seconds int) int {
+	if seconds <= 0 {
+		return 0
+	}
+	return (seconds + 59) / 60
 }

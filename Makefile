@@ -1,14 +1,21 @@
 .DEFAULT_GOAL := help
-.PHONY: help run build test docker-buildx tail-watch tail-prod migrate migrate-down migrate-status gen-api-key
+.PHONY: help run build test docker-buildx tail-watch tail-prod migrate migrate-down migrate-status gen-api-key templ templ-watch
 
 # Include local.mk for local environment variables (API keys, DATABASE_URL, etc.)
 -include local.mk
 
+# Templ code generation
+templ: ## Generate Go code from templ files
+	templ generate
+
+templ-watch: ## Watch templ files and regenerate on change
+	templ generate --watch
+
 # Local development (assumes tailwindcss binary is installed)
-run: tail-prod ## Build Tailwind and run the app (go run ./cmd/learnd)
+run: templ tail-prod ## Generate templ, build Tailwind, and run the app
 	go run ./cmd/learnd
 
-build: tail-prod ## Build production binary to bin/learnd
+build: templ tail-prod ## Generate templ, build Tailwind, and build production binary
 	go build -o bin/learnd ./cmd/learnd
 
 # Tailwind (using standalone CLI binary)

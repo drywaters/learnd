@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/model"
 )
 
 var (

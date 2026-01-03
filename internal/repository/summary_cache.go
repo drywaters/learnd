@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/danielmerrison/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/model"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

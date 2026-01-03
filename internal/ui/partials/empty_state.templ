@@ -1,0 +1,14 @@
+package partials
+
+import "github.com/drywaters/learnd/internal/ui/components"
+
+templ EmptyState(show bool) {
+	if show {
+		<div id="empty-state" hx-swap-oob="true" class="p-8 text-center" style="color: var(--color-ink-lighter);">
+			@components.BookIcon()
+			<p class="text-sm">No entries yet. Start capturing!</p>
+		</div>
+	} else {
+		<div id="empty-state" hx-swap-oob="true"></div>
+	}
+}

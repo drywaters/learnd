@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/model"
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"

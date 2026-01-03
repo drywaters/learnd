@@ -1,0 +1,171 @@
+package partials
+
+import (
+	"fmt"
+
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/ui"
+	"github.com/drywaters/learnd/internal/ui/components"
+)
+
+func needsPolling(entry ui.EntryView) bool {
+	return entry.EnrichmentStatus == model.StatusPending ||
+		entry.EnrichmentStatus == model.StatusProcessing ||
+		entry.SummaryStatus == model.StatusPending ||
+		entry.SummaryStatus == model.StatusProcessing
+}
+
+func safeString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+templ EntryRow(entry ui.EntryView) {
+	<div
+		id={ fmt.Sprintf("entry-%s", entry.ID) }
+		class="entry-row p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+		if entry.SwapOOB {
+			hx-swap-oob="outerHTML"
+		}
+		if needsPolling(entry) {
+			hx-get={ fmt.Sprintf("/entries/%s/status", entry.ID) }
+			hx-trigger="every 5s"
+			hx-swap="outerHTML"
+		}
+	>
+		<!-- Status Icons -->
+		<div class="flex items-center gap-2 sm:w-12">
+			@enrichmentStatus(entry)
+			@summaryStatus(entry)
+		</div>
+
+		<!-- Content -->
+		<div class="flex-grow min-w-0">
+			<div class="flex items-start gap-2 mb-1">
+				<a
+					href={ templ.SafeURL(entry.SourceURL) }
+					target="_blank"
+					rel="noopener noreferrer"
+					class="text-sm font-medium truncate hover:underline"
+					style="color: var(--color-ink);"
+				>
+					if entry.Title != nil && *entry.Title != "" {
+						{ *entry.Title }
+					} else {
+						{ entry.SourceURL }
+					}
+				</a>
+			</div>
+
+			<!-- Meta row -->
+			<div class="flex flex-wrap items-center gap-2 text-xs">
+				<span class={ "badge", fmt.Sprintf("badge-%s", entry.SourceType) }>
+					{ string(entry.SourceType) }
+				</span>
+
+				for _, tag := range entry.Tags {
+					<span class="tag">{ tag }</span>
+				}
+
+				if entry.Domain != nil {
+					<span style="color: var(--color-ink-lighter);">{ *entry.Domain }</span>
+				}
+
+				if entry.DuplicateCount > 1 {
+					<span class="badge badge-duplicate" title="Duplicate entries">
+						{ fmt.Sprintf("Duplicate x%d", entry.DuplicateCount) }
+					</span>
+				}
+
+				if entry.TimeSpentSeconds != nil {
+					<span style="color: var(--color-ink-lighter);">
+						{ fmt.Sprintf("%dm", ui.Divide(*entry.TimeSpentSeconds, 60)) }
+					</span>
+				}
+
+				if entry.RuntimeSeconds != nil {
+					if entry.SourceType == model.SourceTypeYouTube || entry.SourceType == model.SourceTypePodcast {
+						<span style="color: var(--color-ink-lighter);">
+							duration { ui.FormatDuration(entry.RuntimeSeconds) }
+						</span>
+					} else {
+						<span style="color: var(--color-ink-lighter);">
+							read time { ui.FormatReadingTime(entry.RuntimeSeconds) }
+						</span>
+					}
+				}
+			</div>
+
+			if entry.SummaryText != nil {
+				<p class="mt-2 text-xs leading-relaxed" style="color: var(--color-ink-light);">
+					{ *entry.SummaryText }
+				</p>
+			}
+		</div>
+
+		<!-- Actions -->
+		<div class="flex items-center gap-2 sm:ml-4">
+			if entry.EnrichmentStatus == model.StatusFailed {
+				<button
+					hx-post={ fmt.Sprintf("/api/entries/%s/refresh-enrichment", entry.ID) }
+					hx-target={ fmt.Sprintf("#entry-%s", entry.ID) }
+					hx-swap="outerHTML"
+					class="text-xs hover:underline"
+					style="color: var(--color-accent);"
+					title="Retry enrichment"
+				>
+					Retry
+				</button>
+			}
+
+			<button
+				hx-delete={ fmt.Sprintf("/api/entries/%s", entry.ID) }
+				hx-target={ fmt.Sprintf("#entry-%s", entry.ID) }
+				hx-swap="outerHTML"
+				hx-confirm="Delete this entry?"
+				class="text-xs hover:underline opacity-50 hover:opacity-100"
+				style="color: var(--color-error);"
+			>
+				Delete
+			</button>
+		</div>
+	</div>
+}
+
+templ enrichmentStatus(entry ui.EntryView) {
+	switch entry.EnrichmentStatus {
+		case model.StatusPending:
+			<span class="status-pending" title="Enrichment pending">
+				@components.ClockIcon()
+			</span>
+		case model.StatusProcessing:
+			<span class="status-pending animate-spin" title="Enriching...">
+				@components.SpinnerIcon()
+			</span>
+		case model.StatusOK:
+			<span class="status-ok" title="Enriched">
+				@components.CheckIcon()
+			</span>
+		case model.StatusFailed:
+			<span class="status-failed" title={ fmt.Sprintf("Enrichment failed: %s", safeString(entry.EnrichmentError)) }>
+				@components.XIcon()
+			</span>
+	}
+}
+
+templ summaryStatus(entry ui.EntryView) {
+	if entry.EnrichmentStatus == model.StatusOK {
+		switch entry.SummaryStatus {
+			case model.StatusPending:
+				<span class="status-pending opacity-50" title="Summary pending">
+					@components.LinesIcon()
+				</span>
+			case model.StatusProcessing:
+				<span class="status-pending animate-spin opacity-50" title="Summarizing...">
+					@components.SpinnerIconSmall()
+				</span>
+		}
+	}
+}

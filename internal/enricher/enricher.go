@@ -5,7 +5,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/model"
 )
 
 // Result contains extracted metadata from a URL

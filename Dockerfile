@@ -20,7 +20,6 @@ RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /out/learnd ./learnd
 COPY --from=builder /src/migrations ./migrations
-COPY templates ./templates
 COPY static ./static
 
 RUN addgroup -S learnd \

@@ -24,6 +24,17 @@ jobs:
         id: meta
         run: echo "TAG=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.24'
+
+      - name: Install templ
+        run: go install github.com/a-h/templ/cmd/templ@latest
+
+      - name: Generate templ
+        run: templ generate
+
       - name: Install Tailwind CLI binary
         run: |
           curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64

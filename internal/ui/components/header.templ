@@ -1,0 +1,45 @@
+package components
+
+// CaptureHeader renders the header for the capture page
+templ CaptureHeader() {
+	<header class="border-b" style="border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);">
+		<div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+			<a href="/" class="font-display text-2xl font-semibold tracking-tight" style="color: var(--color-ink);">
+				Learnd
+			</a>
+			<nav class="flex items-center gap-4">
+				<a href="/reports" class="btn-secondary flex items-center gap-2">
+					@ChartIcon()
+					<span>Reports</span>
+				</a>
+				<form method="POST" action="/logout" class="inline">
+					<button type="submit" class="text-sm hover:underline" style="color: var(--color-ink-lighter);">
+						Sign Out
+					</button>
+				</form>
+			</nav>
+		</div>
+	</header>
+}
+
+// ReportsHeader renders the header for the reports page
+templ ReportsHeader() {
+	<header class="border-b" style="border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);">
+		<div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+			<a href="/" class="font-display text-2xl font-semibold tracking-tight" style="color: var(--color-ink);">
+				Learnd
+			</a>
+			<nav class="flex items-center gap-4">
+				<a href="/" class="btn-secondary flex items-center gap-2">
+					@PlusIcon()
+					<span>Capture</span>
+				</a>
+				<form method="POST" action="/logout" class="inline">
+					<button type="submit" class="text-sm hover:underline" style="color: var(--color-ink-lighter);">
+						Sign Out
+					</button>
+				</form>
+			</nav>
+		</div>
+	</header>
+}

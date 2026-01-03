@@ -7,9 +7,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/danielmerrison/learnd/internal/model"
-	"github.com/danielmerrison/learnd/internal/repository"
-	"github.com/danielmerrison/learnd/internal/urlutil"
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/ui/partials"
+	"github.com/drywaters/learnd/internal/urlutil"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
@@ -17,31 +18,12 @@ import (
 // EntryHandler handles entry CRUD operations
 type EntryHandler struct {
 	entryRepo *repository.EntryRepository
-	templates TemplateRenderer
-}
-
-// entryCountData is used for the entry_count.html partial
-type entryCountData struct {
-	Count int
-}
-
-// emptyStateData is used for the empty_state.html partial
-type emptyStateData struct {
-	ShowEmptyState bool
-}
-
-// duplicateWarningData is used for duplicate_warning.html
-type duplicateWarningData struct {
-	Show      bool
-	Title     string
-	CreatedAt time.Time
 }
 
 // NewEntryHandler creates a new EntryHandler
-func NewEntryHandler(entryRepo *repository.EntryRepository, templates TemplateRenderer) *EntryHandler {
+func NewEntryHandler(entryRepo *repository.EntryRepository) *EntryHandler {
 	return &EntryHandler{
 		entryRepo: entryRepo,
-		templates: templates,
 	}
 }
 
@@ -79,13 +61,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 				title = *existing.Title
 			}
 
-			if err := h.templates.RenderPartial(w, "duplicate_warning.html", duplicateWarningData{
-				Show:      true,
-				Title:     title,
-				CreatedAt: existing.CreatedAt,
-			}); err != nil {
-				http.Error(w, "Failed to render template", http.StatusInternalServerError)
-			}
+			partials.DuplicateWarning(true, title, existing.CreatedAt).Render(ctx, w)
 			return
 		}
 	}
@@ -152,10 +128,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Render entry row
 	entryView := buildEntryView(ctx, h.entryRepo, entry)
-	if err := h.templates.RenderPartial(w, "entry_row.html", entryView); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-		return
-	}
+	partials.EntryRow(entryView).Render(ctx, w)
 
 	if entryView.DuplicateCount > 1 {
 		duplicates, err := h.entryRepo.ListByNormalizedURL(ctx, entry.NormalizedURL)
@@ -166,19 +139,19 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 				}
 				duplicateView := buildEntryView(ctx, h.entryRepo, &duplicate)
 				duplicateView.SwapOOB = true
-				h.templates.RenderPartial(w, "entry_row.html", duplicateView)
+				partials.EntryRow(duplicateView).Render(ctx, w)
 			}
 		}
 	}
 
 	// Render OOB swap for entry count
-	h.templates.RenderPartial(w, "entry_count.html", entryCountData{Count: count})
+	partials.EntryCount(count).Render(ctx, w)
 
 	// Render OOB swap to remove empty state
-	h.templates.RenderPartial(w, "empty_state.html", emptyStateData{ShowEmptyState: false})
+	partials.EmptyState(false).Render(ctx, w)
 
 	// Clear duplicate warning
-	h.templates.RenderPartial(w, "duplicate_warning.html", duplicateWarningData{Show: false})
+	partials.DuplicateWarning(false, "", time.Time{}).Render(ctx, w)
 }
 
 // List returns entries as JSON
@@ -306,9 +279,7 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	h.htmxToast(w, "Entry updated", &entry.ID, "")
 
 	entryView := buildEntryView(ctx, h.entryRepo, entry)
-	if err := h.templates.RenderPartial(w, "entry_row.html", entryView); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	partials.EntryRow(entryView).Render(ctx, w)
 }
 
 // Delete removes an entry
@@ -320,6 +291,23 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		http.Error(w, "Invalid ID", http.StatusBadRequest)
 		return
+	}
+
+	entry, err := h.entryRepo.GetByID(ctx, id)
+	if err != nil {
+		http.Error(w, "Failed to get entry", http.StatusInternalServerError)
+		return
+	}
+	if entry == nil {
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	normalizedURL := entry.NormalizedURL
+	if normalizedURL == "" {
+		if normalized, err := urlutil.NormalizeURL(entry.SourceURL); err == nil {
+			normalizedURL = normalized
+		}
 	}
 
 	if err := h.entryRepo.Delete(ctx, id); err != nil {
@@ -336,10 +324,21 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	h.htmxToast(w, "Entry deleted", &id, "")
 
 	// Render OOB swap for entry count
-	h.templates.RenderPartial(w, "entry_count.html", entryCountData{Count: count})
+	partials.EntryCount(count).Render(ctx, w)
 
 	// Render OOB swap for empty state (show if no entries left)
-	h.templates.RenderPartial(w, "empty_state.html", emptyStateData{ShowEmptyState: count == 0})
+	partials.EmptyState(count == 0).Render(ctx, w)
+
+	if normalizedURL != "" {
+		duplicates, err := h.entryRepo.ListByNormalizedURL(ctx, normalizedURL)
+		if err == nil {
+			for _, duplicate := range duplicates {
+				duplicateView := buildEntryView(ctx, h.entryRepo, &duplicate)
+				duplicateView.SwapOOB = true
+				partials.EntryRow(duplicateView).Render(ctx, w)
+			}
+		}
+	}
 }
 
 // RefreshEnrichment resets enrichment status to pending
@@ -367,9 +366,7 @@ func (h *EntryHandler) RefreshEnrichment(w http.ResponseWriter, r *http.Request)
 	h.htmxToast(w, "Enrichment queued", &id, "")
 
 	entryView := buildEntryView(ctx, h.entryRepo, entry)
-	if err := h.templates.RenderPartial(w, "entry_row.html", entryView); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	partials.EntryRow(entryView).Render(ctx, w)
 }
 
 // RefreshSummary resets summary status to pending
@@ -397,9 +394,7 @@ func (h *EntryHandler) RefreshSummary(w http.ResponseWriter, r *http.Request) {
 	h.htmxToast(w, "Summary queued", &id, "")
 
 	entryView := buildEntryView(ctx, h.entryRepo, entry)
-	if err := h.templates.RenderPartial(w, "entry_row.html", entryView); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	partials.EntryRow(entryView).Render(ctx, w)
 }
 
 // Status returns the status partial for an entry (for polling)
@@ -420,9 +415,7 @@ func (h *EntryHandler) Status(w http.ResponseWriter, r *http.Request) {
 	}
 
 	entryView := buildEntryView(ctx, h.entryRepo, entry)
-	if err := h.templates.RenderPartial(w, "entry_row.html", entryView); err != nil {
-		http.Error(w, "Failed to render template", http.StatusInternalServerError)
-	}
+	partials.EntryRow(entryView).Render(ctx, w)
 }
 
 func (h *EntryHandler) htmxError(w http.ResponseWriter, msg string) {
