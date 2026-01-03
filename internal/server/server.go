@@ -41,8 +41,9 @@ func (s *Server) Router() http.Handler {
 	r.Use(chimw.Recoverer)
 
 	// Static files
+	const staticCacheControl = "public, max-age=86400"
 	fileServer := http.FileServer(http.Dir("static"))
-	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
+	r.Handle("/static/*", withCacheControl(staticCacheControl, http.StripPrefix("/static/", fileServer)))
 
 	// Root-level static files (favicons, manifest, etc.)
 	for _, file := range []string{
@@ -102,4 +103,11 @@ func serveStaticFile(path string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, path)
 	}
+}
+
+func withCacheControl(cacheControl string, next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Cache-Control", cacheControl)
+		next.ServeHTTP(w, r)
+	})
 }
