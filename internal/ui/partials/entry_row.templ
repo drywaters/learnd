@@ -60,9 +60,11 @@ templ EntryRow(entry ui.EntryView) {
 			</div>
 
 			<!-- Date added -->
-			<div class="text-xs mb-1" style="color: var(--color-ink-lighter);">
-				{ ui.FormatDate(entry.CreatedAt) }
-			</div>
+			if !entry.CreatedAt.IsZero() {
+				<div class="text-xs mb-1" style="color: var(--color-ink-lighter);">
+					{ ui.FormatDate(entry.CreatedAt) }
+				</div>
+			}
 
 			<!-- Meta row -->
 			<div class="flex flex-wrap items-center gap-2 text-xs">

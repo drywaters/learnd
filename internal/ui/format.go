@@ -54,6 +54,10 @@ func FormatReadingTime(seconds *int) string {
 }
 
 // FormatDate formats a time to "Jan 2, 2006" format
+// Returns an empty string if the time is zero (0001-01-01)
 func FormatDate(t time.Time) string {
+	if t.IsZero() {
+		return ""
+	}
 	return t.Format("Jan 2, 2006")
 }
