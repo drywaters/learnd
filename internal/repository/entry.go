@@ -269,6 +269,9 @@ func (r *EntryRepository) GetDuplicateCountsByNormalizedURL(ctx context.Context,
 		}
 		counts[normalizedURL] = count
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
 
 	return counts, nil
 }
@@ -505,6 +508,9 @@ func (r *EntryRepository) AggregateByTag(ctx context.Context, start, end time.Ti
 		}
 		results = append(results, agg)
 	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
+	}
 
 	return results, nil
 }
@@ -532,6 +538,9 @@ func (r *EntryRepository) AggregateByType(ctx context.Context, start, end time.T
 			return nil, fmt.Errorf("failed to scan type aggregation: %w", err)
 		}
 		results = append(results, agg)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 
 	return results, nil

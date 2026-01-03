@@ -3,11 +3,18 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /src
 
+# Install build tools
+RUN apk add --no-cache make npm && \
+    npm install -g tailwindcss && \
+    go install github.com/a-h/templ/cmd/templ@latest
+
 COPY go.mod go.sum ./
 RUN go mod download
 
-COPY cmd ./cmd
-COPY internal ./internal
+COPY . .
+
+# Generate templ files and build Tailwind CSS
+RUN make templ tail-prod
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o /out/learnd ./cmd/learnd
 
@@ -18,8 +25,8 @@ WORKDIR /app
 RUN apk add --no-cache ca-certificates
 
 COPY --from=builder /out/learnd ./learnd
+COPY --from=builder /src/static ./static
 COPY migrations ./migrations
-COPY static ./static
 
 RUN addgroup -S learnd \
     && adduser -S -G learnd learnd \
