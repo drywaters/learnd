@@ -44,6 +44,19 @@ func (s *Server) Router() http.Handler {
 	fileServer := http.FileServer(http.Dir("static"))
 	r.Handle("/static/*", http.StripPrefix("/static/", fileServer))
 
+	// Root-level static files (favicons, manifest, etc.)
+	for _, file := range []string{
+		"favicon.ico",
+		"apple-touch-icon.png",
+		"favicon-16x16.png",
+		"favicon-32x32.png",
+		"android-chrome-192x192.png",
+		"android-chrome-512x512.png",
+		"site.webmanifest",
+	} {
+		r.Get("/"+file, serveStaticFile("static/"+file))
+	}
+
 	r.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 		w.WriteHeader(http.StatusOK)
@@ -83,4 +96,10 @@ func (s *Server) Router() http.Handler {
 	})
 
 	return r
+}
+
+func serveStaticFile(path string) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		http.ServeFile(w, r, path)
+	}
 }
