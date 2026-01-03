@@ -3,11 +3,11 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /src
 
-# Install build tools and standalone Tailwind CSS binary
+# Install build tools and standalone Tailwind CSS binary (musl variant for Alpine)
 RUN apk add --no-cache make curl && \
     go install github.com/a-h/templ/cmd/templ@latest && \
     curl -fsSL -o /usr/local/bin/tailwindcss \
-      https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64 && \
+      https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64-musl && \
     chmod +x /usr/local/bin/tailwindcss && \
     tailwindcss --version
 
