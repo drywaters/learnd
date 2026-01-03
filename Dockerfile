@@ -3,14 +3,13 @@
 FROM golang:1.25-alpine AS builder
 WORKDIR /src
 
-# Install build tools
+# Install build tools and standalone Tailwind CSS binary
 RUN apk add --no-cache make curl && \
-    go install github.com/a-h/templ/cmd/templ@latest
-
-# Install standalone Tailwind CSS binary (faster than npm, no Node required)
-RUN curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64 && \
-    chmod +x tailwindcss-linux-arm64 && \
-    mv tailwindcss-linux-arm64 /usr/local/bin/tailwindcss
+    go install github.com/a-h/templ/cmd/templ@latest && \
+    curl -fsSL -o /usr/local/bin/tailwindcss \
+      https://github.com/tailwindlabs/tailwindcss/releases/latest/download/tailwindcss-linux-arm64 && \
+    chmod +x /usr/local/bin/tailwindcss && \
+    tailwindcss --version
 
 COPY go.mod go.sum ./
 RUN go mod download
