@@ -1,0 +1,151 @@
+<div
+    id="entry-{{.ID}}"
+    class="entry-row p-4 flex flex-col sm:flex-row sm:items-center gap-3"
+    {{if .SwapOOB}}hx-swap-oob="outerHTML"{{end}}
+    {{if or (eq .EnrichmentStatus "pending") (eq .EnrichmentStatus "processing") (eq .SummaryStatus "pending") (eq .SummaryStatus "processing")}}
+    hx-get="/entries/{{.ID}}/status"
+    hx-trigger="every 5s"
+    hx-swap="outerHTML"
+    {{end}}
+>
+    <!-- Status Icons -->
+    <div class="flex items-center gap-2 sm:w-12">
+        <!-- Enrichment Status -->
+        {{if eq .EnrichmentStatus "pending"}}
+        <span class="status-pending" title="Enrichment pending">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+        </span>
+        {{else if eq .EnrichmentStatus "processing"}}
+        <span class="status-pending animate-spin" title="Enriching...">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+        </span>
+        {{else if eq .EnrichmentStatus "ok"}}
+        <span class="status-ok" title="Enriched">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+            </svg>
+        </span>
+        {{else if eq .EnrichmentStatus "failed"}}
+        <span class="status-failed" title="Enrichment failed: {{.EnrichmentError}}">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </span>
+        {{end}}
+
+        <!-- Summary Status (only show if enrichment is ok) -->
+        {{if eq .EnrichmentStatus "ok"}}
+            {{if eq .SummaryStatus "pending"}}
+            <span class="status-pending opacity-50" title="Summary pending">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"/>
+                </svg>
+            </span>
+            {{else if eq .SummaryStatus "processing"}}
+            <span class="status-pending animate-spin opacity-50" title="Summarizing...">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+            </span>
+            {{end}}
+        {{end}}
+    </div>
+
+    <!-- Content -->
+    <div class="flex-grow min-w-0">
+        <div class="flex items-start gap-2 mb-1">
+            <!-- Title/URL -->
+            <a
+                href="{{.SourceURL}}"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-sm font-medium truncate hover:underline"
+                style="color: var(--color-ink);"
+            >
+                {{if .Title}}{{.Title}}{{else}}{{.SourceURL}}{{end}}
+            </a>
+        </div>
+
+        <!-- Meta row -->
+        <div class="flex flex-wrap items-center gap-2 text-xs">
+            <!-- Type Badge -->
+            <span class="badge badge-{{.SourceType}}">{{.SourceType}}</span>
+
+            <!-- Tags -->
+            {{range .Tags}}
+            <span class="tag">{{.}}</span>
+            {{end}}
+
+            <!-- Domain -->
+            {{if .Domain}}
+            <span style="color: var(--color-ink-lighter);">{{.Domain}}</span>
+            {{end}}
+
+            {{if gt .DuplicateCount 1}}
+            <span class="badge badge-duplicate" title="Duplicate entries">
+                Duplicate x{{.DuplicateCount}}
+            </span>
+            {{end}}
+
+            <!-- Time spent -->
+            {{if .TimeSpentSeconds}}
+            <span style="color: var(--color-ink-lighter);">
+                {{divide .TimeSpentSeconds 60}}m
+            </span>
+            {{end}}
+
+            <!-- Runtime -->
+            {{if .RuntimeSeconds}}
+            {{if or (eq .SourceType "youtube") (eq .SourceType "podcast")}}
+            <span style="color: var(--color-ink-lighter);">
+                duration {{formatDuration .RuntimeSeconds}}
+            </span>
+            {{else}}
+            <span style="color: var(--color-ink-lighter);">
+                read time {{formatReadingTime .RuntimeSeconds}}
+            </span>
+            {{end}}
+            {{end}}
+        </div>
+
+        <!-- Summary (if available) -->
+        {{if .SummaryText}}
+        <p class="mt-2 text-xs leading-relaxed" style="color: var(--color-ink-light);">
+            {{.SummaryText}}
+        </p>
+        {{end}}
+    </div>
+
+    <!-- Actions -->
+    <div class="flex items-center gap-2 sm:ml-4">
+        {{if eq .EnrichmentStatus "failed"}}
+        <button
+            hx-post="/api/entries/{{.ID}}/refresh-enrichment"
+            hx-target="#entry-{{.ID}}"
+            hx-swap="outerHTML"
+            class="text-xs hover:underline"
+            style="color: var(--color-accent);"
+            title="Retry enrichment"
+        >
+            Retry
+        </button>
+        {{end}}
+
+        <button
+            hx-delete="/api/entries/{{.ID}}"
+            hx-target="#entry-{{.ID}}"
+            hx-swap="outerHTML"
+            hx-confirm="Delete this entry?"
+            class="text-xs hover:underline opacity-50 hover:opacity-100"
+            style="color: var(--color-error);"
+        >
+            Delete
+        </button>
+    </div>
+</div>

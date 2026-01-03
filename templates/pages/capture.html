@@ -1,0 +1,158 @@
+{{template "base.html" .}}
+
+{{define "title"}}Capture - Learnd{{end}}
+
+{{define "content"}}
+<div class="min-h-screen">
+    <!-- Header -->
+    <header class="border-b" style="border-color: var(--color-warm-gray); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="font-display text-2xl font-semibold tracking-tight" style="color: var(--color-ink);">
+                Learnd
+            </a>
+            <nav class="flex items-center gap-4">
+                <a href="/reports" class="btn-secondary flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span>Reports</span>
+                </a>
+                <form method="POST" action="/logout" class="inline">
+                    <button type="submit" class="text-sm hover:underline" style="color: var(--color-ink-lighter);">
+                        Sign Out
+                    </button>
+                </form>
+            </nav>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 py-8">
+        <!-- Capture Form -->
+        <div class="card p-6 md:p-8 mb-8">
+            <form
+                id="capture-form"
+                hx-post="/api/entries"
+                hx-target="#entry-list"
+                hx-swap="afterbegin"
+                hx-on::after-request="if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }"
+            >
+                <!-- URL and Tags Row -->
+                <div class="flex flex-col md:flex-row gap-4 mb-4">
+                    <div class="flex-grow">
+                        <label for="url" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+                            URL
+                        </label>
+                        <input
+                            type="url"
+                            id="url"
+                            name="url"
+                            class="input-field input-url w-full"
+                            placeholder="https://..."
+                            autocomplete="off"
+                            autofocus
+                            required
+                        >
+                    </div>
+                    <div class="md:w-48">
+                        <label for="tags" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+                            Tags
+                        </label>
+                        <input
+                            type="text"
+                            id="tags"
+                            name="tags"
+                            class="input-field w-full"
+                            placeholder="ai, tech, js"
+                            autocomplete="off"
+                        >
+                    </div>
+                </div>
+
+                <div id="duplicate-warning" class="mb-4"></div>
+
+                <!-- Optional Fields Row -->
+                <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                    <div class="sm:w-32">
+                        <label for="time_spent" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+                            Time (min)
+                        </label>
+                        <input
+                            type="number"
+                            id="time_spent"
+                            name="time_spent"
+                            class="input-field w-full text-sm"
+                            placeholder="30"
+                            min="1"
+                        >
+                    </div>
+                    <div class="sm:w-32">
+                        <label for="quantity" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+                            Quantity
+                        </label>
+                        <input
+                            type="number"
+                            id="quantity"
+                            name="quantity"
+                            class="input-field w-full text-sm"
+                            placeholder="e.g. pages"
+                            min="1"
+                        >
+                    </div>
+                    <div class="flex-grow">
+                        <label for="notes" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+                            Notes
+                        </label>
+                        <input
+                            type="text"
+                            id="notes"
+                            name="notes"
+                            class="input-field w-full text-sm"
+                            placeholder="Optional notes..."
+                        >
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <div class="flex justify-end">
+                    <button type="submit" class="btn-primary flex items-center gap-2">
+                        <span class="htmx-indicator animate-spin">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"/>
+                            </svg>
+                        </span>
+                        <span>Save Entry</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Entries Section -->
+        <div>
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-display text-lg font-medium" style="color: var(--color-ink);">
+                    Recent Entries
+                </h2>
+                <span id="entry-count" class="text-sm" style="color: var(--color-ink-lighter);">
+                    {{len .Entries}} {{if eq (len .Entries) 1}}entry{{else}}entries{{end}}
+                </span>
+            </div>
+
+            <div class="card overflow-hidden">
+                <div id="entry-list" class="divide-y" style="border-color: var(--color-warm-gray);">
+                    {{range .Entries}}
+                    {{template "entry_row.html" .}}
+                    {{else}}
+                    <div id="empty-state" class="p-8 text-center" style="color: var(--color-ink-lighter);">
+                        <svg class="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                        <p class="text-sm">No entries yet. Start capturing!</p>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{{end}}

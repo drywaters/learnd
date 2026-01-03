@@ -1,0 +1,17 @@
+<div id="duplicate-warning" hx-swap-oob="innerHTML">
+    {{if .Show}}
+    <div class="duplicate-warning">
+        <div class="duplicate-warning__text">
+            <span class="duplicate-warning__label">Duplicate detected.</span>
+            {{if .Title}}
+            <span class="duplicate-warning__detail">“{{.Title}}” was saved on {{formatDate .CreatedAt}}.</span>
+            {{else}}
+            <span class="duplicate-warning__detail">This link was saved on {{formatDate .CreatedAt}}.</span>
+            {{end}}
+        </div>
+        <button type="submit" name="allow_duplicate" value="1" class="duplicate-warning__button">
+            Add anyway
+        </button>
+    </div>
+    {{end}}
+</div>

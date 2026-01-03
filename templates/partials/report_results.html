@@ -1,0 +1,102 @@
+<div class="space-y-6">
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="card p-4 text-center">
+            <div class="text-2xl font-display font-semibold" style="color: var(--color-ink);">
+                {{.TotalEntries}}
+            </div>
+            <div class="text-xs mt-1" style="color: var(--color-ink-lighter);">
+                Total Entries
+            </div>
+        </div>
+        <div class="card p-4 text-center">
+            <div class="text-2xl font-display font-semibold" style="color: var(--color-ink);">
+                {{.TotalTime}}
+            </div>
+            <div class="text-xs mt-1" style="color: var(--color-ink-lighter);">
+                Minutes Tracked
+            </div>
+        </div>
+        <div class="card p-4 text-center">
+            <div class="text-2xl font-display font-semibold" style="color: var(--color-ink);">
+                {{len .ByTag}}
+            </div>
+            <div class="text-xs mt-1" style="color: var(--color-ink-lighter);">
+                Unique Tags
+            </div>
+        </div>
+        <div class="card p-4 text-center">
+            <div class="text-2xl font-display font-semibold" style="color: var(--color-ink);">
+                {{len .ByType}}
+            </div>
+            <div class="text-xs mt-1" style="color: var(--color-ink-lighter);">
+                Content Types
+            </div>
+        </div>
+    </div>
+
+    <!-- By Tag -->
+    {{if .ByTag}}
+    <div class="card overflow-hidden">
+        <div class="p-4 border-b" style="border-color: var(--color-warm-gray);">
+            <h3 class="font-display font-medium" style="color: var(--color-ink);">By Tag</h3>
+        </div>
+        <div class="divide-y" style="border-color: var(--color-warm-gray);">
+            {{range .ByTag}}
+            <div class="p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="tag">{{.tag}}</span>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="text-right">
+                        <span class="font-medium" style="color: var(--color-ink);">{{.count}}</span>
+                        <span style="color: var(--color-ink-lighter);">entries</span>
+                    </div>
+                    {{if .time}}
+                    <div class="text-right w-20">
+                        <span class="font-medium" style="color: var(--color-ink);">{{.time}}</span>
+                        <span style="color: var(--color-ink-lighter);">min</span>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+    {{end}}
+
+    <!-- By Type -->
+    {{if .ByType}}
+    <div class="card overflow-hidden">
+        <div class="p-4 border-b" style="border-color: var(--color-warm-gray);">
+            <h3 class="font-display font-medium" style="color: var(--color-ink);">By Type</h3>
+        </div>
+        <div class="divide-y" style="border-color: var(--color-warm-gray);">
+            {{range .ByType}}
+            <div class="p-4 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="badge badge-{{.type}}">{{.type}}</span>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="text-right">
+                        <span class="font-medium" style="color: var(--color-ink);">{{.count}}</span>
+                        <span style="color: var(--color-ink-lighter);">entries</span>
+                    </div>
+                    {{if .time}}
+                    <div class="text-right w-20">
+                        <span class="font-medium" style="color: var(--color-ink);">{{.time}}</span>
+                        <span style="color: var(--color-ink-lighter);">min</span>
+                    </div>
+                    {{end}}
+                </div>
+            </div>
+            {{end}}
+        </div>
+    </div>
+    {{end}}
+
+    <!-- Date Range Info -->
+    <div class="text-center text-xs" style="color: var(--color-ink-lighter);">
+        Report for {{.Start}} to {{.End}}
+    </div>
+</div>

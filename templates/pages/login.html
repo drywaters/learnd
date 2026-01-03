@@ -1,0 +1,62 @@
+{{template "base.html" .}}
+
+{{define "title"}}Sign In - Learnd{{end}}
+
+{{define "content"}}
+<div class="min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-sm">
+        <!-- Logo -->
+        <div class="text-center mb-12">
+            <h1 class="font-display text-4xl font-semibold tracking-tight mb-2" style="color: var(--color-ink);">
+                Learnd
+            </h1>
+            <p class="text-sm" style="color: var(--color-ink-lighter);">
+                Your personal learning journal
+            </p>
+        </div>
+
+        <!-- Login Card -->
+        <div class="card p-8">
+            <form method="POST" action="/login" class="space-y-6">
+                <div>
+                    <label for="api_key" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
+                        API Key
+                    </label>
+                    <input
+                        type="password"
+                        id="api_key"
+                        name="api_key"
+                        class="input-field w-full"
+                        placeholder="Enter your API key"
+                        autocomplete="current-password"
+                        autofocus
+                        required
+                    >
+                </div>
+
+                {{if .Error}}
+                <div class="flex items-center gap-2 text-sm p-3 rounded-lg" style="background: #FEF2F2; color: var(--color-error);">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>
+                        {{if eq .Error "invalid_key"}}Invalid API key. Please try again.{{end}}
+                        {{if eq .Error "missing_key"}}Please enter your API key.{{end}}
+                        {{if eq .Error "invalid_request"}}Invalid request. Please try again.{{end}}
+                    </span>
+                </div>
+                {{end}}
+
+                <button type="submit" class="btn-primary w-full">
+                    Sign In
+                </button>
+            </form>
+        </div>
+
+        <!-- Footer -->
+        <p class="text-center mt-8 text-xs" style="color: var(--color-ink-lighter);">
+            Track your learning. Review your growth.
+        </p>
+    </div>
+</div>
+{{end}}

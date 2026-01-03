@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{block "title" .}}Learnd{{end}}</title>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..900;1,9..144,300..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+    <!-- HTMX -->
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+
+    <!-- Tailwind -->
+    <link rel="stylesheet" href="/static/styles.css">
+
+    <style>
+        :root {
+            --color-parchment: #FAF8F5;
+            --color-cream: #F5F2ED;
+            --color-warm-gray: #E8E4DE;
+            --color-ink: #2C2825;
+            --color-ink-light: #5C5652;
+            --color-ink-lighter: #8A8580;
+            --color-accent: #B8860B;
+            --color-accent-light: #DAA520;
+            --color-success: #3D7A4A;
+            --color-error: #A63D3D;
+            --color-pending: #B8860B;
+
+            --font-display: 'Fraunces', Georgia, serif;
+            --font-body: 'DM Sans', system-ui, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+
+            --shadow-sm: 0 1px 2px rgba(44, 40, 37, 0.04);
+            --shadow-md: 0 4px 12px rgba(44, 40, 37, 0.08);
+            --shadow-lg: 0 8px 24px rgba(44, 40, 37, 0.12);
+        }
+
+        * {
+            font-family: var(--font-body);
+        }
+
+        body {
+            background-color: var(--color-parchment);
+            color: var(--color-ink);
+            min-height: 100vh;
+            background-image:
+                radial-gradient(ellipse at 20% 0%, rgba(184, 134, 11, 0.03) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 100%, rgba(184, 134, 11, 0.02) 0%, transparent 50%);
+        }
+
+        .font-display {
+            font-family: var(--font-display);
+        }
+
+        .font-mono {
+            font-family: var(--font-mono);
+        }
+
+        /* Custom input styling */
+        .input-field {
+            background: white;
+            border: 1px solid var(--color-warm-gray);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(184, 134, 11, 0.1), var(--shadow-md);
+        }
+
+        .input-field::placeholder {
+            color: var(--color-ink-lighter);
+        }
+
+        .input-url {
+            font-family: var(--font-mono);
+            font-size: 1.125rem;
+            padding: 1rem 1.25rem;
+        }
+
+        /* Button styling */
+        .btn-primary {
+            background: var(--color-ink);
+            color: var(--color-parchment);
+            font-weight: 500;
+            padding: 0.875rem 2rem;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background: var(--color-ink-light);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--color-ink);
+            border: 1px solid var(--color-warm-gray);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .btn-secondary:hover {
+            background: var(--color-cream);
+            border-color: var(--color-ink-lighter);
+        }
+
+        /* Status badges */
+        .status-pending { color: var(--color-pending); }
+        .status-ok { color: var(--color-success); }
+        .status-failed { color: var(--color-error); }
+
+        /* Type badges */
+        .badge {
+            font-size: 0.6875rem;
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+        }
+
+        .badge-youtube { background: #FEE2E2; color: #991B1B; }
+        .badge-podcast { background: #E0E7FF; color: #3730A3; }
+        .badge-article { background: #D1FAE5; color: #065F46; }
+        .badge-doc { background: #FEF3C7; color: #92400E; }
+        .badge-other { background: var(--color-warm-gray); color: var(--color-ink-light); }
+        .badge-duplicate { background: #FDECC8; color: #8A5A00; }
+
+        /* Tag styling */
+        .tag {
+            font-size: 0.75rem;
+            color: var(--color-ink-light);
+            background: var(--color-cream);
+            padding: 0.125rem 0.5rem;
+            border-radius: 4px;
+            border: 1px solid var(--color-warm-gray);
+        }
+
+        .duplicate-warning {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 1px solid #E6C68C;
+            background: #FFF6E5;
+            color: #7A4A00;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .duplicate-warning__text {
+            font-size: 0.75rem;
+            line-height: 1.4;
+        }
+
+        .duplicate-warning__label {
+            font-weight: 600;
+            margin-right: 0.35rem;
+        }
+
+        .duplicate-warning__detail {
+            color: #8A5A00;
+        }
+
+        .duplicate-warning__button {
+            background: var(--color-ink);
+            color: var(--color-parchment);
+            padding: 0.4rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .duplicate-warning__button:hover {
+            background: var(--color-ink-light);
+        }
+
+        /* Toast animations */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .toast-enter {
+            animation: slideIn 0.3s ease forwards;
+        }
+
+        .toast-exit {
+            animation: slideOut 0.3s ease forwards;
+        }
+
+        /* Card styling */
+        .card {
+            background: white;
+            border: 1px solid var(--color-warm-gray);
+            border-radius: 12px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* Divider */
+        .divider {
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--color-warm-gray), transparent);
+        }
+
+        /* Entry row hover */
+        .entry-row {
+            transition: all 0.15s ease;
+        }
+
+        .entry-row:hover {
+            background: var(--color-cream);
+        }
+
+        /* Loading states */
+        .htmx-request .htmx-indicator {
+            display: inline-block;
+        }
+
+        .htmx-indicator {
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+    </style>
+</head>
+<body class="antialiased" hx-boost="true">
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 flex flex-col gap-2"></div>
+
+    {{block "content" .}}{{end}}
+
+    <script>
+        (function () {
+            if (window.__toastHandlersInitialized) {
+                return;
+            }
+            window.__toastHandlersInitialized = true;
+
+            // Toast handling
+            document.body.addEventListener('showToast', function(evt) {
+                const detail = evt.detail || {};
+                const message = detail.message || 'Action completed';
+                const type = detail.type || 'success';
+                const id = detail.id || '';
+                const now = Date.now();
+                const toastKey = `${id}:${type}:${message}`;
+                const lastToast = window.__lastToast || {};
+
+                if (lastToast.key === toastKey && now - lastToast.time < 500) {
+                    return;
+                }
+
+                window.__lastToast = { key: toastKey, time: now };
+
+                const toast = document.createElement('div');
+                toast.className = `toast-enter px-4 py-3 rounded-lg shadow-lg flex items-center gap-3 ${
+                    type === 'error'
+                        ? 'bg-red-50 border border-red-200 text-red-800'
+                        : 'bg-white border border-gray-200 text-gray-800'
+                }`;
+
+                const icon = type === 'error'
+                    ? `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
+                    : `<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+
+                toast.innerHTML = `${icon}<span class="text-sm font-medium">${message}</span>`;
+
+                const container = document.getElementById('toast-container');
+                container.appendChild(toast);
+
+                setTimeout(() => {
+                    toast.classList.remove('toast-enter');
+                    toast.classList.add('toast-exit');
+                    setTimeout(() => toast.remove(), 300);
+                }, 3000);
+            });
+
+        })();
+    </script>
+</body>
+</html>
