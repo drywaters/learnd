@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/csv"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -82,6 +83,7 @@ func (h *ReportHandler) GetReport(w http.ResponseWriter, r *http.Request) {
 	for {
 		entries, err := h.entryRepo.List(ctx, opts)
 		if err != nil {
+			slog.Error("failed to list entries", "handler", "GetReport", "offset", opts.Offset, "error", err)
 			http.Error(w, "Failed to get entries", http.StatusInternalServerError)
 			return
 		}
@@ -192,17 +194,6 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 
 	const pageSize = 1000
 
-	w.Header().Set("Content-Type", "text/csv")
-	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=learnd-export-%s.csv", time.Now().Format("2006-01-02")))
-
-	writer := csv.NewWriter(w)
-	defer writer.Flush()
-
-	// Write header
-	writer.Write([]string{
-		"Date", "URL", "Title", "Type", "Tags", "Time (min)", "Quantity", "Notes", "Summary",
-	})
-
 	opts := repository.ListOptions{
 		Limit:  pageSize,
 		Offset: 0,
@@ -210,16 +201,28 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 		End:    &end,
 	}
 
-	for {
-		entries, err := h.entryRepo.List(ctx, opts)
-		if err != nil {
-			http.Error(w, "Failed to get entries", http.StatusInternalServerError)
-			return
-		}
-		if len(entries) == 0 {
-			break
-		}
+	// Fetch first page before writing headers to allow clean error response
+	entries, err := h.entryRepo.List(ctx, opts)
+	if err != nil {
+		slog.Error("failed to list entries", "handler", "ExportCSV", "offset", opts.Offset, "error", err)
+		http.Error(w, "Failed to get entries", http.StatusInternalServerError)
+		return
+	}
 
+	// Now safe to write headers and begin streaming
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", fmt.Sprintf("attachment; filename=learnd-export-%s.csv", time.Now().Format("2006-01-02")))
+
+	writer := csv.NewWriter(w)
+	defer writer.Flush()
+
+	// Write CSV header
+	writer.Write([]string{
+		"Date", "URL", "Title", "Type", "Tags", "Time (min)", "Quantity", "Notes", "Summary",
+	})
+
+	for {
+		// Process current page
 		for _, entry := range entries {
 			title := ""
 			if entry.Title != nil {
@@ -269,7 +272,19 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 			})
 		}
 
+		// Check if this was the last page
+		if len(entries) < pageSize {
+			break
+		}
+
+		// Fetch next page
 		opts.Offset += len(entries)
+		entries, err = h.entryRepo.List(ctx, opts)
+		if err != nil {
+			// Headers already sent, can only log and stop
+			slog.Error("failed to list entries", "handler", "ExportCSV", "offset", opts.Offset, "error", err)
+			return
+		}
 	}
 }
 

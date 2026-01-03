@@ -3,13 +3,13 @@ package middleware
 import (
 	"net/http"
 
-	"golang.org/x/crypto/bcrypt"
+	"github.com/drywaters/learnd/internal/session"
 )
 
-const cookieName = "learnd_api_key"
+const cookieName = "learnd_session"
 
-// Auth middleware validates the API key cookie
-func Auth(apiKeyHash string) func(http.Handler) http.Handler {
+// Auth middleware validates the session token cookie
+func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(cookieName)
@@ -18,18 +18,23 @@ func Auth(apiKeyHash string) func(http.Handler) http.Handler {
 				return
 			}
 
-			if err := bcrypt.CompareHashAndPassword([]byte(apiKeyHash), []byte(cookie.Value)); err != nil {
-				// Invalid cookie, clear it and redirect
+			// O(1) token lookup instead of expensive bcrypt comparison
+			if !sessions.Valid(cookie.Value) {
+				// Invalid/expired session, clear cookie and redirect
 				http.SetCookie(w, &http.Cookie{
 					Name:     cookieName,
 					Value:    "",
 					Path:     "/",
 					MaxAge:   -1,
 					HttpOnly: true,
+					Secure:   secureCookies,
 				})
 				http.Redirect(w, r, "/login", http.StatusSeeOther)
 				return
 			}
+
+			// Refresh session TTL on activity
+			sessions.Refresh(cookie.Value)
 
 			next.ServeHTTP(w, r)
 		})

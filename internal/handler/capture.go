@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/drywaters/learnd/internal/repository"
@@ -26,11 +27,15 @@ func (h *CaptureHandler) CapturePage(w http.ResponseWriter, r *http.Request) {
 	// Get recent entries
 	entries, err := h.entryRepo.List(ctx, repository.ListOptions{Limit: 20})
 	if err != nil {
+		slog.Error("failed to list entries", "handler", "CapturePage", "error", err)
 		http.Error(w, "Failed to load entries", http.StatusInternalServerError)
 		return
 	}
 
 	entryViews := buildEntryViews(ctx, h.entryRepo, entries)
 
-	pages.CapturePage(entryViews).Render(ctx, w)
+	if err := pages.CapturePage(entryViews).Render(ctx, w); err != nil {
+		// Log only - response may already be partially written, can't send clean http.Error
+		slog.Error("failed to render page", "handler", "CapturePage", "error", err)
+	}
 }

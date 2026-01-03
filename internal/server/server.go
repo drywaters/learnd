@@ -7,6 +7,7 @@ import (
 	"github.com/drywaters/learnd/internal/handler"
 	"github.com/drywaters/learnd/internal/middleware"
 	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/session"
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 )
@@ -16,14 +17,16 @@ type Server struct {
 	cfg              *config.Config
 	entryRepo        *repository.EntryRepository
 	summaryCacheRepo *repository.SummaryCacheRepository
+	sessions         *session.Store
 }
 
 // New creates a new Server
-func New(cfg *config.Config, entryRepo *repository.EntryRepository, summaryCacheRepo *repository.SummaryCacheRepository) *Server {
+func New(cfg *config.Config, entryRepo *repository.EntryRepository, summaryCacheRepo *repository.SummaryCacheRepository, sessions *session.Store) *Server {
 	return &Server{
 		cfg:              cfg,
 		entryRepo:        entryRepo,
 		summaryCacheRepo: summaryCacheRepo,
+		sessions:         sessions,
 	}
 }
 
@@ -48,14 +51,14 @@ func (s *Server) Router() http.Handler {
 	})
 
 	// Auth handlers
-	authHandler := handler.NewAuthHandler(s.cfg.APIKeyHash)
+	authHandler := handler.NewAuthHandler(s.cfg.APIKeyHash, s.sessions, s.cfg.SecureCookies)
 	r.Get("/login", authHandler.LoginPage)
 	r.Post("/login", authHandler.Login)
 	r.Post("/logout", authHandler.Logout)
 
 	// Protected routes
 	r.Group(func(r chi.Router) {
-		r.Use(middleware.Auth(s.cfg.APIKeyHash))
+		r.Use(middleware.Auth(s.sessions, s.cfg.SecureCookies))
 
 		// Capture handler
 		captureHandler := handler.NewCaptureHandler(s.entryRepo)

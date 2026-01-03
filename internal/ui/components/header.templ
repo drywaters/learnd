@@ -12,7 +12,7 @@ templ CaptureHeader() {
 					@ChartIcon()
 					<span>Reports</span>
 				</a>
-				<form method="POST" action="/logout" class="inline">
+				<form method="POST" action="/logout" class="inline" hx-boost="false">
 					<button type="submit" class="text-sm hover:underline" style="color: var(--color-ink-lighter);">
 						Sign Out
 					</button>
@@ -34,7 +34,7 @@ templ ReportsHeader() {
 					@PlusIcon()
 					<span>Capture</span>
 				</a>
-				<form method="POST" action="/logout" class="inline">
+				<form method="POST" action="/logout" class="inline" hx-boost="false">
 					<button type="submit" class="text-sm hover:underline" style="color: var(--color-ink-lighter);">
 						Sign Out
 					</button>

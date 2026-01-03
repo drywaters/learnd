@@ -313,14 +313,31 @@ templ toastScript() {
 						: 'bg-white border border-gray-200 text-gray-800'
 				}`;
 
-				const icon = type === 'error'
-					? `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>`
-					: `<svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>`;
+				// Build toast content safely using DOM APIs to prevent XSS
+			const svgNS = 'http://www.w3.org/2000/svg';
+			const icon = document.createElementNS(svgNS, 'svg');
+			icon.setAttribute('class', type === 'error' ? 'w-5 h-5 text-red-500' : 'w-5 h-5 text-green-600');
+			icon.setAttribute('fill', 'none');
+			icon.setAttribute('stroke', 'currentColor');
+			icon.setAttribute('viewBox', '0 0 24 24');
 
-				toast.innerHTML = `${icon}<span class="text-sm font-medium">${message}</span>`;
+			const path = document.createElementNS(svgNS, 'path');
+			path.setAttribute('stroke-linecap', 'round');
+			path.setAttribute('stroke-linejoin', 'round');
+			path.setAttribute('stroke-width', '2');
+			path.setAttribute('d', type === 'error'
+				? 'M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+				: 'M5 13l4 4L19 7');
+			icon.appendChild(path);
+			toast.appendChild(icon);
 
-				const container = document.getElementById('toast-container');
-				container.appendChild(toast);
+			const msgSpan = document.createElement('span');
+			msgSpan.className = 'text-sm font-medium';
+			msgSpan.textContent = message;
+			toast.appendChild(msgSpan);
+
+			const container = document.getElementById('toast-container');
+			container.appendChild(toast);
 
 				setTimeout(() => {
 					toast.classList.remove('toast-enter');

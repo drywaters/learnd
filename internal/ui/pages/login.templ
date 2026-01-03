@@ -21,7 +21,7 @@ templ LoginPage(errorType string) {
 
 				<!-- Login Card -->
 				<div class="card p-8">
-					<form method="POST" action="/login" class="space-y-6">
+					<form method="POST" action="/login" class="space-y-6" hx-boost="false">
 						<div>
 							<label for="api_key" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 								API Key

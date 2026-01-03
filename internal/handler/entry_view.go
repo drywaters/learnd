@@ -8,23 +8,26 @@ import (
 	"github.com/drywaters/learnd/internal/ui"
 )
 
-func buildEntryView(ctx context.Context, repo *repository.EntryRepository, entry *model.Entry) ui.EntryView {
-	duplicateCount := 1
+func buildEntryView(entry *model.Entry, duplicateCount int) ui.EntryView {
+	return ui.EntryView{
+		Entry:          *entry,
+		DuplicateCount: duplicateCount,
+		SwapOOB:        false,
+	}
+}
+
+// getDuplicateCount returns the number of entries sharing the same normalized URL.
+func getDuplicateCount(ctx context.Context, repo *repository.EntryRepository, entry *model.Entry) int {
 	normalizedURL := entry.NormalizedURL
 	if normalizedURL == "" {
 		normalizedURL = entry.SourceURL
 	}
 	if normalizedURL != "" {
 		if count, err := repo.CountByNormalizedURL(ctx, normalizedURL); err == nil && count > 0 {
-			duplicateCount = count
+			return count
 		}
 	}
-
-	return ui.EntryView{
-		Entry:          *entry,
-		DuplicateCount: duplicateCount,
-		SwapOOB:        false,
-	}
+	return 1
 }
 
 func buildEntryViews(ctx context.Context, repo *repository.EntryRepository, entries []model.Entry) []ui.EntryView {

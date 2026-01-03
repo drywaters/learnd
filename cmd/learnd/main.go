@@ -14,6 +14,7 @@ import (
 	"github.com/drywaters/learnd/internal/enricher"
 	"github.com/drywaters/learnd/internal/repository"
 	"github.com/drywaters/learnd/internal/server"
+	"github.com/drywaters/learnd/internal/session"
 	"github.com/drywaters/learnd/internal/summarizer"
 	"github.com/drywaters/learnd/internal/worker"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -104,8 +105,11 @@ func run() error {
 	})
 	bgWorker.Start(ctx)
 
+	// Initialize session store (24-hour TTL for sessions)
+	sessions := session.NewStore(24 * time.Hour)
+
 	// Create server
-	srv := server.New(cfg, entryRepo, summaryCacheRepo)
+	srv := server.New(cfg, entryRepo, summaryCacheRepo, sessions)
 
 	// Start HTTP server
 	httpServer := &http.Server{

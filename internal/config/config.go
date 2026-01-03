@@ -4,60 +4,51 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	"github.com/spf13/viper"
 )
 
 // Config holds all application configuration
 type Config struct {
-	Port          string `mapstructure:"port"`
-	DatabaseURL   string `mapstructure:"database_url"`
-	APIKeyHash    string `mapstructure:"api_key_hash"`
-	GeminiAPIKey  string `mapstructure:"gemini_api_key"`
-	YouTubeAPIKey string `mapstructure:"youtube_api_key"`
-	LogLevel      string `mapstructure:"log_level"`
+	Port          string
+	DatabaseURL   string
+	APIKeyHash    string
+	GeminiAPIKey  string
+	YouTubeAPIKey string
+	LogLevel      string
+	SecureCookies bool
 }
 
-// Load reads configuration from environment variables
-// Supports _FILE suffix pattern for reading secrets from files (Docker Swarm style)
+// Load reads configuration from environment variables.
+// Supports _FILE suffix pattern for reading secrets from files (Docker Swarm style).
 func Load() (*Config, error) {
-	v := viper.New()
-
-	// Set defaults
-	v.SetDefault("port", "4500")
-	v.SetDefault("log_level", "info")
-
-	// Bind environment variables
-	v.SetEnvPrefix("")
-	v.AutomaticEnv()
-
-	// Map of config keys to their env var names
-	envBindings := map[string]string{
-		"port":            "PORT",
-		"database_url":    "DATABASE_URL",
-		"api_key_hash":    "API_KEY_HASH",
-		"gemini_api_key":  "GEMINI_API_KEY",
-		"youtube_api_key": "YOUTUBE_API_KEY",
-		"log_level":       "LOG_LEVEL",
-	}
-
-	for key, envVar := range envBindings {
-		if err := v.BindEnv(key, envVar); err != nil {
-			return nil, fmt.Errorf("failed to bind env var %s: %w", envVar, err)
-		}
-	}
-
+	var err error
 	cfg := &Config{}
 
-	// Load each config value, checking for _FILE variants first
-	cfg.Port = getConfigValue(v, "port", "PORT")
-	cfg.DatabaseURL = getConfigValue(v, "database_url", "DATABASE_URL")
-	cfg.APIKeyHash = getConfigValue(v, "api_key_hash", "API_KEY_HASH")
-	cfg.GeminiAPIKey = getConfigValue(v, "gemini_api_key", "GEMINI_API_KEY")
-	cfg.YouTubeAPIKey = getConfigValue(v, "youtube_api_key", "YOUTUBE_API_KEY")
-	cfg.LogLevel = getConfigValue(v, "log_level", "LOG_LEVEL")
+	if cfg.Port, err = getEnv("PORT", "4500"); err != nil {
+		return nil, err
+	}
+	if cfg.DatabaseURL, err = getEnv("DATABASE_URL", ""); err != nil {
+		return nil, err
+	}
+	if cfg.APIKeyHash, err = getEnv("API_KEY_HASH", ""); err != nil {
+		return nil, err
+	}
+	if cfg.GeminiAPIKey, err = getEnv("GEMINI_API_KEY", ""); err != nil {
+		return nil, err
+	}
+	if cfg.YouTubeAPIKey, err = getEnv("YOUTUBE_API_KEY", ""); err != nil {
+		return nil, err
+	}
+	if cfg.LogLevel, err = getEnv("LOG_LEVEL", "info"); err != nil {
+		return nil, err
+	}
 
-	// Validate required config
+	// Secure cookies enabled by default (production), set SECURE_COOKIES=false for local dev
+	secureCookiesStr, err := getEnv("SECURE_COOKIES", "true")
+	if err != nil {
+		return nil, err
+	}
+	cfg.SecureCookies = secureCookiesStr != "false"
+
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")
 	}
@@ -68,17 +59,22 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// getConfigValue checks for FOO_FILE env var first, reads from file if exists,
-// otherwise falls back to FOO env var
-func getConfigValue(v *viper.Viper, key, envVar string) string {
-	// Check for _FILE variant first
-	fileEnvVar := envVar + "_FILE"
-	if filePath := os.Getenv(fileEnvVar); filePath != "" {
-		if data, err := os.ReadFile(filePath); err == nil {
-			return strings.TrimSpace(string(data))
+// getEnv checks for FOO_FILE env var first, reads from file if exists,
+// otherwise falls back to FOO env var, then to the default value.
+// Returns an error if _FILE is set but the file cannot be read.
+func getEnv(key, defaultVal string) (string, error) {
+	// Check for _FILE variant first (Docker Swarm secrets pattern)
+	if filePath := os.Getenv(key + "_FILE"); filePath != "" {
+		data, err := os.ReadFile(filePath)
+		if err != nil {
+			return "", fmt.Errorf("failed to read %s_FILE (%s): %w", key, filePath, err)
 		}
+		return strings.TrimSpace(string(data)), nil
 	}
 
-	// Fall back to regular env var via viper
-	return v.GetString(key)
+	if val := os.Getenv(key); val != "" {
+		return val, nil
+	}
+
+	return defaultVal, nil
 }

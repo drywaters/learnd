@@ -58,15 +58,13 @@ func (r *Registry) Register(e Enricher) {
 	})
 }
 
-// Enrich processes a URL using the appropriate enricher
+// Enrich processes a URL using the appropriate enricher.
+// The first enricher that can handle the URL is authoritative - if it fails,
+// the error is returned rather than falling back to a generic enricher.
 func (r *Registry) Enrich(ctx context.Context, url string) (*Result, error) {
 	for _, e := range r.enrichers {
 		if e.CanHandle(url) {
-			result, err := e.Enrich(ctx, url)
-			if err == nil {
-				return result, nil
-			}
-			// Log error but continue to fallback
+			return e.Enrich(ctx, url)
 		}
 	}
 	return r.fallback.Enrich(ctx, url)

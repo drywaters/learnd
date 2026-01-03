@@ -38,7 +38,7 @@ func CaptureHeader() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span>Reports</span></a><form method=\"POST\" action=\"/logout\" class=\"inline\"><button type=\"submit\" class=\"text-sm hover:underline\" style=\"color: var(--color-ink-lighter);\">Sign Out</button></form></nav></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<span>Reports</span></a><form method=\"POST\" action=\"/logout\" class=\"inline\" hx-boost=\"false\"><button type=\"submit\" class=\"text-sm hover:underline\" style=\"color: var(--color-ink-lighter);\">Sign Out</button></form></nav></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
@@ -76,7 +76,7 @@ func ReportsHeader() templ.Component {
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span>Capture</span></a><form method=\"POST\" action=\"/logout\" class=\"inline\"><button type=\"submit\" class=\"text-sm hover:underline\" style=\"color: var(--color-ink-lighter);\">Sign Out</button></form></nav></div></header>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<span>Capture</span></a><form method=\"POST\" action=\"/logout\" class=\"inline\" hx-boost=\"false\"><button type=\"submit\" class=\"text-sm hover:underline\" style=\"color: var(--color-ink-lighter);\">Sign Out</button></form></nav></div></header>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}

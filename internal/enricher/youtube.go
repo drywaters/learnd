@@ -7,22 +7,16 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
 	"github.com/drywaters/learnd/internal/model"
 )
 
-var (
-	// YouTube URL patterns
-	youtubePatterns = []*regexp.Regexp{
-		regexp.MustCompile(`(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})`),
-	}
-
-	// ISO 8601 duration pattern (PT#H#M#S)
-	durationPattern = regexp.MustCompile(`PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?`)
-)
+// YouTube URL patterns
+var youtubePatterns = []*regexp.Regexp{
+	regexp.MustCompile(`(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/shorts/|youtube\.com/embed/)([a-zA-Z0-9_-]{11})`),
+}
 
 // YouTubeEnricher extracts metadata from YouTube videos using the Data API v3
 type YouTubeEnricher struct {
@@ -124,27 +118,6 @@ func extractVideoID(rawURL string) string {
 		}
 	}
 	return ""
-}
-
-// parseDuration converts ISO 8601 duration to seconds
-func parseDuration(duration string) int {
-	matches := durationPattern.FindStringSubmatch(duration)
-	if len(matches) == 0 {
-		return 0
-	}
-
-	var hours, minutes, seconds int
-	if matches[1] != "" {
-		hours, _ = strconv.Atoi(matches[1])
-	}
-	if matches[2] != "" {
-		minutes, _ = strconv.Atoi(matches[2])
-	}
-	if matches[3] != "" {
-		seconds, _ = strconv.Atoi(matches[3])
-	}
-
-	return hours*3600 + minutes*60 + seconds
 }
 
 // truncateDescription limits description length for storage

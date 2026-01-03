@@ -2,6 +2,7 @@ package handler
 
 import (
 	"encoding/json"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"strings"
@@ -127,17 +128,18 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	h.htmxToast(w, "Entry saved", &entry.ID, "")
 
 	// Render entry row
-	entryView := buildEntryView(ctx, h.entryRepo, entry)
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
 	partials.EntryRow(entryView).Render(ctx, w)
 
-	if entryView.DuplicateCount > 1 {
+	if duplicateCount > 1 {
 		duplicates, err := h.entryRepo.ListByNormalizedURL(ctx, entry.NormalizedURL)
 		if err == nil {
 			for _, duplicate := range duplicates {
 				if duplicate.ID == entry.ID {
 					continue
 				}
-				duplicateView := buildEntryView(ctx, h.entryRepo, &duplicate)
+				duplicateView := buildEntryView(&duplicate, duplicateCount)
 				duplicateView.SwapOOB = true
 				partials.EntryRow(duplicateView).Render(ctx, w)
 			}
@@ -177,6 +179,7 @@ func (h *EntryHandler) List(w http.ResponseWriter, r *http.Request) {
 		Offset: offset,
 	})
 	if err != nil {
+		slog.Error("failed to list entries", "handler", "List", "error", err)
 		http.Error(w, "Failed to list entries", http.StatusInternalServerError)
 		return
 	}
@@ -198,6 +201,7 @@ func (h *EntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 
 	entry, err := h.entryRepo.GetByID(ctx, id)
 	if err != nil {
+		slog.Error("failed to get entry", "handler", "Get", "id", id, "error", err)
 		http.Error(w, "Failed to get entry", http.StatusInternalServerError)
 		return
 	}
@@ -268,6 +272,7 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	entry, err := h.entryRepo.Update(ctx, id, input)
 	if err != nil {
+		slog.Error("failed to update entry", "handler", "Update", "id", id, "error", err)
 		http.Error(w, "Failed to update entry", http.StatusInternalServerError)
 		return
 	}
@@ -278,7 +283,8 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 
 	h.htmxToast(w, "Entry updated", &entry.ID, "")
 
-	entryView := buildEntryView(ctx, h.entryRepo, entry)
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
 	partials.EntryRow(entryView).Render(ctx, w)
 }
 
@@ -295,6 +301,7 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	entry, err := h.entryRepo.GetByID(ctx, id)
 	if err != nil {
+		slog.Error("failed to get entry", "handler", "Delete", "id", id, "error", err)
 		http.Error(w, "Failed to get entry", http.StatusInternalServerError)
 		return
 	}
@@ -311,6 +318,7 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.entryRepo.Delete(ctx, id); err != nil {
+		slog.Error("failed to delete entry", "handler", "Delete", "id", id, "error", err)
 		http.Error(w, "Failed to delete entry", http.StatusInternalServerError)
 		return
 	}
@@ -331,9 +339,10 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 
 	if normalizedURL != "" {
 		duplicates, err := h.entryRepo.ListByNormalizedURL(ctx, normalizedURL)
-		if err == nil {
+		if err == nil && len(duplicates) > 0 {
+			duplicateCount := len(duplicates)
 			for _, duplicate := range duplicates {
-				duplicateView := buildEntryView(ctx, h.entryRepo, &duplicate)
+				duplicateView := buildEntryView(&duplicate, duplicateCount)
 				duplicateView.SwapOOB = true
 				partials.EntryRow(duplicateView).Render(ctx, w)
 			}
@@ -353,6 +362,7 @@ func (h *EntryHandler) RefreshEnrichment(w http.ResponseWriter, r *http.Request)
 	}
 
 	if err := h.entryRepo.ResetEnrichment(ctx, id); err != nil {
+		slog.Error("failed to reset enrichment", "handler", "RefreshEnrichment", "id", id, "error", err)
 		http.Error(w, "Failed to reset enrichment", http.StatusInternalServerError)
 		return
 	}
@@ -365,7 +375,8 @@ func (h *EntryHandler) RefreshEnrichment(w http.ResponseWriter, r *http.Request)
 
 	h.htmxToast(w, "Enrichment queued", &id, "")
 
-	entryView := buildEntryView(ctx, h.entryRepo, entry)
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
 	partials.EntryRow(entryView).Render(ctx, w)
 }
 
@@ -381,6 +392,7 @@ func (h *EntryHandler) RefreshSummary(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if err := h.entryRepo.ResetSummary(ctx, id); err != nil {
+		slog.Error("failed to reset summary", "handler", "RefreshSummary", "id", id, "error", err)
 		http.Error(w, "Failed to reset summary", http.StatusInternalServerError)
 		return
 	}
@@ -393,7 +405,8 @@ func (h *EntryHandler) RefreshSummary(w http.ResponseWriter, r *http.Request) {
 
 	h.htmxToast(w, "Summary queued", &id, "")
 
-	entryView := buildEntryView(ctx, h.entryRepo, entry)
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
 	partials.EntryRow(entryView).Render(ctx, w)
 }
 
@@ -414,7 +427,8 @@ func (h *EntryHandler) Status(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	entryView := buildEntryView(ctx, h.entryRepo, entry)
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
 	partials.EntryRow(entryView).Render(ctx, w)
 }
 
