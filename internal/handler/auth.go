@@ -1,37 +1,34 @@
 package handler
 
 import (
+	"crypto/subtle"
 	"net/http"
 	"net/url"
 
-	"github.com/drywaters/learnd/internal/session"
 	"github.com/drywaters/learnd/internal/ui/pages"
-	"golang.org/x/crypto/bcrypt"
 )
 
 const cookieName = "learnd_session"
 
 // AuthHandler handles authentication
 type AuthHandler struct {
-	apiKeyHash    string
-	sessions      *session.Store
+	apiToken      string
 	secureCookies bool
 }
 
 // NewAuthHandler creates a new AuthHandler
-func NewAuthHandler(apiKeyHash string, sessions *session.Store, secureCookies bool) *AuthHandler {
+func NewAuthHandler(apiToken string, secureCookies bool) *AuthHandler {
 	return &AuthHandler{
-		apiKeyHash:    apiKeyHash,
-		sessions:      sessions,
+		apiToken:      apiToken,
 		secureCookies: secureCookies,
 	}
 }
 
 // LoginPage renders the login page
 func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
-	// If already authenticated via valid session, redirect to home
+	// If already authenticated via valid cookie, redirect to home
 	if cookie, err := r.Cookie(cookieName); err == nil {
-		if h.sessions.Valid(cookie.Value) {
+		if constantTimeEqual(cookie.Value, h.apiToken) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
@@ -55,23 +52,16 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validate the API key with bcrypt (only happens once at login)
-	if err := bcrypt.CompareHashAndPassword([]byte(h.apiKeyHash), []byte(apiKey)); err != nil {
+	// Validate the API token with constant-time comparison
+	if !constantTimeEqual(apiKey, h.apiToken) {
 		http.Redirect(w, r, "/login?error=invalid_key", http.StatusSeeOther)
 		return
 	}
 
-	// Create a session token
-	token, err := h.sessions.Create()
-	if err != nil {
-		http.Redirect(w, r, "/login?error=server_error", http.StatusSeeOther)
-		return
-	}
-
-	// Set the session cookie
+	// Set the session cookie with the token value
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieName,
-		Value:    token,
+		Value:    h.apiToken,
 		Path:     "/",
 		HttpOnly: true,
 		Secure:   h.secureCookies,
@@ -97,13 +87,8 @@ func isValidRedirect(rawURL string) bool {
 	return parsed.Scheme == "" && parsed.Host == "" && len(parsed.Path) > 0 && parsed.Path[0] == '/'
 }
 
-// Logout clears the session cookie and invalidates the session
+// Logout clears the session cookie
 func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
-	// Invalidate the session server-side
-	if cookie, err := r.Cookie(cookieName); err == nil {
-		h.sessions.Delete(cookie.Value)
-	}
-
 	// Clear the cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     cookieName,
@@ -115,4 +100,9 @@ func (h *AuthHandler) Logout(w http.ResponseWriter, r *http.Request) {
 		SameSite: http.SameSiteLaxMode,
 	})
 	http.Redirect(w, r, "/login", http.StatusSeeOther)
+}
+
+// constantTimeEqual performs a constant-time comparison to prevent timing attacks.
+func constantTimeEqual(a, b string) bool {
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }

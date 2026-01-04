@@ -1,5 +1,5 @@
 .DEFAULT_GOAL := help
-.PHONY: help run build test docker-buildx tail-watch tail-prod migrate migrate-down migrate-status gen-api-key templ templ-watch
+.PHONY: help run build test docker-buildx tail-watch tail-prod migrate migrate-down migrate-status templ templ-watch
 
 # Include local.mk for local environment variables (API keys, DATABASE_URL, etc.)
 -include local.mk
@@ -47,10 +47,6 @@ docker-buildx: templ tail-prod ## Build and push multi-arch Docker image using b
 		--tag $(REGISTRY)/$(IMAGE_REPO):latest \
 		--push \
 		.
-
-# Generate API key hash
-gen-api-key: ## Generate bcrypt hash for API_KEY_HASH
-	@go run ./scripts/hashkey.go
 
 help: ## Show this help menu
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make <target>\n\nTargets:\n"} /^[a-zA-Z0-9_.-]+:.*##/ {printf "  %-20s %s\n", $$1, $$2} END {printf "\n"}' $(MAKEFILE_LIST)
