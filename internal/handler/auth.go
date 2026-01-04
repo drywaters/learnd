@@ -63,10 +63,10 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		Name:     cookieName,
 		Value:    h.apiToken,
 		Path:     "/",
+		MaxAge:   90 * 24 * 60 * 60, // 90 days
 		HttpOnly: true,
 		Secure:   h.secureCookies,
 		SameSite: http.SameSiteLaxMode,
-		// No MaxAge = session cookie (expires when browser closes)
 	})
 
 	// Redirect to the original URL if provided, otherwise home
