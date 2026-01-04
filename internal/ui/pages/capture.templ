@@ -136,19 +136,11 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 									@partials.EntryRow(entry)
 								}
 							}
-							<div id="empty-state">
-								if len(entries) == 0 {
-									<div class="p-8 text-center" style="color: var(--color-ink-lighter);">
-										@components.BookIcon()
-										<p class="text-sm">No entries yet. Start capturing!</p>
-									</div>
-								}
-							</div>
 						</div>
+						@partials.EmptyState(len(entries) == 0)
 					</div>
 				</div>
 			</main>
 		</div>
 	}
 }
-
