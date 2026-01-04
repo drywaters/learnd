@@ -151,7 +151,9 @@ func (r *EntryRepository) Update(ctx context.Context, id uuid.UUID, input *model
 
 	query := `
 		UPDATE entries
-		SET tags = $2, time_spent_seconds = $3, quantity = $4, notes = $5, updated_at = NOW()
+		SET tags = $2, time_spent_seconds = $3, quantity = $4, notes = $5,
+		    title = $6, description = $7, summary_text = $8, source_type = $9,
+		    updated_at = NOW()
 		WHERE id = $1
 		RETURNING id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
 		          canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
@@ -160,7 +162,8 @@ func (r *EntryRepository) Update(ctx context.Context, id uuid.UUID, input *model
 	`
 
 	var entry model.Entry
-	err := r.pool.QueryRow(ctx, query, id, tags, input.TimeSpentSeconds, input.Quantity, input.Notes).Scan(
+	err := r.pool.QueryRow(ctx, query, id, tags, input.TimeSpentSeconds, input.Quantity, input.Notes,
+		input.Title, input.Description, input.SummaryText, input.SourceType).Scan(
 		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tags,
 		&entry.TimeSpentSeconds, &entry.Quantity, &entry.Notes,
 		&entry.CanonicalURL, &entry.Domain, &entry.SourceType, &entry.Title, &entry.Description,
@@ -480,7 +483,7 @@ type TypeAggregation struct {
 
 // ReportTotals represents total counts for a date range
 type ReportTotals struct {
-	TotalEntries    int
+	TotalEntries     int
 	TotalTimeSeconds int
 }
 
@@ -566,7 +569,7 @@ func (r *EntryRepository) GetReportTotals(ctx context.Context, start, end time.T
 // normalizeTags lowercases, trims, and dedupes tags
 func normalizeTags(tags []string) []string {
 	seen := make(map[string]bool)
-	var result []string
+	result := []string{} // Initialize as empty slice, not nil (nil would be interpreted as SQL NULL)
 	for _, tag := range tags {
 		tag = strings.ToLower(strings.TrimSpace(tag))
 		if tag != "" && !seen[tag] {

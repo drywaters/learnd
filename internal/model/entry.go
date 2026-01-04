@@ -83,6 +83,11 @@ type UpdateEntryInput struct {
 	TimeSpentSeconds *int
 	Quantity         *int
 	Notes            *string
+	// Editable enriched fields
+	Title       *string
+	Description *string
+	SummaryText *string
+	SourceType  *SourceType
 }
 
 // SummaryCache represents a cached summary for a URL

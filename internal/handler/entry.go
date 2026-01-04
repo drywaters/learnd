@@ -10,6 +10,7 @@ import (
 
 	"github.com/drywaters/learnd/internal/model"
 	"github.com/drywaters/learnd/internal/repository"
+	"github.com/drywaters/learnd/internal/ui/pages"
 	"github.com/drywaters/learnd/internal/ui/partials"
 	"github.com/drywaters/learnd/internal/urlutil"
 	"github.com/go-chi/chi/v5"
@@ -194,6 +195,33 @@ func (h *EntryHandler) Get(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// EditPage renders the edit form for an entry
+func (h *EntryHandler) EditPage(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	idStr := chi.URLParam(r, "id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		http.Error(w, "Invalid ID", http.StatusBadRequest)
+		return
+	}
+
+	entry, err := h.entryRepo.GetByID(ctx, id)
+	if err != nil {
+		slog.Error("failed to get entry", "handler", "EditPage", "id", id, "error", err)
+		http.Error(w, "Failed to get entry", http.StatusInternalServerError)
+		return
+	}
+	if entry == nil {
+		http.Error(w, "Entry not found", http.StatusNotFound)
+		return
+	}
+
+	duplicateCount := getDuplicateCount(ctx, h.entryRepo, entry)
+	entryView := buildEntryView(entry, duplicateCount)
+	pages.EditPage(entryView).Render(ctx, w)
+}
+
 // Update updates an entry
 func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	ctx := r.Context()
@@ -210,17 +238,27 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Parse optional fields
+	// Parse user fields
 	tags := parseTags(r.FormValue("tags"))
 	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
 	quantity := parseQuantity(r.FormValue("quantity"))
 	notes := parseNotes(r.FormValue("notes"))
+
+	// Parse content fields
+	title := parseOptionalString(r.FormValue("title"))
+	description := parseOptionalString(r.FormValue("description"))
+	summary := parseOptionalString(r.FormValue("summary"))
+	sourceType := parseSourceType(r.FormValue("source_type"))
 
 	input := &model.UpdateEntryInput{
 		Tags:             tags,
 		TimeSpentSeconds: timeSpent,
 		Quantity:         quantity,
 		Notes:            notes,
+		Title:            title,
+		Description:      description,
+		SummaryText:      summary,
+		SourceType:       sourceType,
 	}
 
 	entry, err := h.entryRepo.Update(ctx, id, input)
@@ -456,4 +494,39 @@ func parseNotes(n string) *string {
 		return nil
 	}
 	return &trimmed
+}
+
+// parseOptionalString trims a string and returns a pointer if non-empty.
+// Returns nil if the trimmed result is empty.
+func parseOptionalString(s string) *string {
+	trimmed := strings.TrimSpace(s)
+	if trimmed == "" {
+		return nil
+	}
+	return &trimmed
+}
+
+// parseSourceType parses a source type string and returns a pointer.
+// Returns nil if the input is empty or not a valid source type.
+func parseSourceType(s string) *model.SourceType {
+	s = strings.TrimSpace(strings.ToLower(s))
+	if s == "" {
+		return nil
+	}
+	var st model.SourceType
+	switch s {
+	case "youtube":
+		st = model.SourceTypeYouTube
+	case "podcast":
+		st = model.SourceTypePodcast
+	case "article":
+		st = model.SourceTypeArticle
+	case "doc":
+		st = model.SourceTypeDoc
+	case "other":
+		st = model.SourceTypeOther
+	default:
+		return nil
+	}
+	return &st
 }

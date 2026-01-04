@@ -85,6 +85,7 @@ func (s *Server) Router() http.Handler {
 		r.Post("/api/entries/{id}/refresh-enrichment", entryHandler.RefreshEnrichment)
 		r.Post("/api/entries/{id}/refresh-summary", entryHandler.RefreshSummary)
 		r.Get("/entries/{id}/status", entryHandler.Status)
+		r.Get("/entries/{id}/edit", entryHandler.EditPage)
 
 		// Report handler
 		reportHandler := handler.NewReportHandler(s.entryRepo)

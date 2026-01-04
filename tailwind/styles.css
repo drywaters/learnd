@@ -122,6 +122,21 @@
 		border-color: var(--color-ink-lighter);
 	}
 
+	.btn-tertiary {
+		background: var(--color-cream);
+		color: var(--color-ink-light);
+		border: 1px solid var(--color-warm-gray);
+		padding: 0.5rem 1rem;
+		border-radius: 6px;
+		font-size: 0.875rem;
+		transition: all 0.2s ease;
+	}
+
+	.btn-tertiary:hover {
+		background: var(--color-warm-gray);
+		color: var(--color-ink);
+	}
+
 	/* Status indicators */
 	.status-pending {
 		color: var(--color-pending);
