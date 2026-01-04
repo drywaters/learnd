@@ -83,12 +83,7 @@ func (s *Store) Valid(token string) bool {
 		return false
 	}
 
-	if time.Now().After(expiry) {
-		s.Delete(token)
-		return false
-	}
-
-	return true
+	return time.Now().Before(expiry)
 }
 
 // Delete removes a session token.
