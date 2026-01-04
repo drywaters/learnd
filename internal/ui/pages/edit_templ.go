@@ -225,7 +225,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</textarea></div></div></div><!-- Classification Section --><div class=\"mb-6\"><h2 class=\"text-xs font-semibold uppercase tracking-wide mb-4\" style=\"color: var(--color-ink-lighter);\">Classification</h2><div><label for=\"source_type\" class=\"block text-sm font-medium mb-1.5\" style=\"color: var(--color-ink-light);\">Source Type</label> <select id=\"source_type\" name=\"source_type\" class=\"input-field w-full\" style=\"cursor: pointer; appearance: none; background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%235c5652%22 d=%22M2 4l4 4 4-4%22/%3E%3C/svg%3E'); background-repeat: no-repeat; background-position: right 1rem center;\"><option value=\"youtube\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "</textarea></div></div></div><!-- Classification Section --><div class=\"mb-6\"><h2 class=\"text-xs font-semibold uppercase tracking-wide mb-4\" style=\"color: var(--color-ink-lighter);\">Classification</h2><div><label for=\"source_type\" class=\"block text-sm font-medium mb-1.5\" style=\"color: var(--color-ink-light);\">Source Type</label> <select id=\"source_type\" name=\"source_type\" class=\"input-field input-select w-full\"><option value=\"youtube\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -282,7 +282,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 			var templ_7745c5c3_Var15 string
 			templ_7745c5c3_Var15, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/api/entries/%s/refresh-enrichment", entry.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/edit.templ`, Line: 205, Col: 78}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/edit.templ`, Line: 204, Col: 78}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var15))
 			if templ_7745c5c3_Err != nil {
@@ -303,7 +303,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 			var templ_7745c5c3_Var16 string
 			templ_7745c5c3_Var16, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("/api/entries/%s/refresh-summary", entry.ID))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/edit.templ`, Line: 215, Col: 75}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/edit.templ`, Line: 214, Col: 75}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var16))
 			if templ_7745c5c3_Err != nil {

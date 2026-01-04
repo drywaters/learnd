@@ -19,11 +19,11 @@ import (
 
 // EntryHandler handles entry CRUD operations
 type EntryHandler struct {
-	entryRepo *repository.EntryRepository
+	entryRepo EntryRepo
 }
 
 // NewEntryHandler creates a new EntryHandler
-func NewEntryHandler(entryRepo *repository.EntryRepository) *EntryHandler {
+func NewEntryHandler(entryRepo EntryRepo) *EntryHandler {
 	return &EntryHandler{
 		entryRepo: entryRepo,
 	}
@@ -72,7 +72,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	tags := parseTags(r.FormValue("tags"))
 	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
 	quantity := parseQuantity(r.FormValue("quantity"))
-	notes := parseNotes(r.FormValue("notes"))
+	notes := parseOptionalString(r.FormValue("notes"))
 
 	input := &model.CreateEntryInput{
 		SourceURL:        url,
@@ -242,7 +242,7 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	tags := parseTags(r.FormValue("tags"))
 	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
 	quantity := parseQuantity(r.FormValue("quantity"))
-	notes := parseNotes(r.FormValue("notes"))
+	notes := parseOptionalString(r.FormValue("notes"))
 
 	// Parse content fields
 	title := parseOptionalString(r.FormValue("title"))
@@ -484,16 +484,6 @@ func parseQuantity(q string) *int {
 		return &v
 	}
 	return nil
-}
-
-// parseNotes trims the notes string and returns a pointer if non-empty.
-// Returns nil if the trimmed result is empty.
-func parseNotes(n string) *string {
-	trimmed := strings.TrimSpace(n)
-	if trimmed == "" {
-		return nil
-	}
-	return &trimmed
 }
 
 // parseOptionalString trims a string and returns a pointer if non-empty.

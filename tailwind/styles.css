@@ -86,6 +86,14 @@
 		padding: 1rem 1.25rem;
 	}
 
+	.input-select {
+		cursor: pointer;
+		appearance: none;
+		background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22%3E%3Cpath fill=%22%235c5652%22 d=%22M2 4l4 4 4-4%22/%3E%3C/svg%3E');
+		background-repeat: no-repeat;
+		background-position: right 1rem center;
+	}
+
 	/* Buttons */
 	.btn-primary {
 		background: var(--color-ink);
@@ -120,21 +128,6 @@
 	.btn-secondary:hover {
 		background: var(--color-cream);
 		border-color: var(--color-ink-lighter);
-	}
-
-	.btn-tertiary {
-		background: var(--color-cream);
-		color: var(--color-ink-light);
-		border: 1px solid var(--color-warm-gray);
-		padding: 0.5rem 1rem;
-		border-radius: 6px;
-		font-size: 0.875rem;
-		transition: all 0.2s ease;
-	}
-
-	.btn-tertiary:hover {
-		background: var(--color-warm-gray);
-		color: var(--color-ink);
 	}
 
 	/* Status indicators */
