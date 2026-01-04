@@ -22,6 +22,11 @@ func safeString(s *string) string {
 	return *s
 }
 
+// EntryRow creates a templ.Component that renders a single entry row showing status badges, primary link/title, metadata, tags, optional notes and summary, and action controls.
+// 
+// The rendered markup includes enrichment and summary status badges and will add polling attributes when the entry requires periodic status updates.
+// Metadata may include created date, time spent, quantity, and either a duration (for audio/video) or a read time. Tags, source domain, and a duplicate-count badge are shown when present.
+// When enrichment has failed a "Retry" action is rendered that posts to the enrichment refresh endpoint; a "Delete" action is always rendered and issues a delete request with user confirmation.
 templ EntryRow(entry ui.EntryView) {
 	<div
 		id={ fmt.Sprintf("entry-%s", entry.ID) }
@@ -59,14 +64,36 @@ templ EntryRow(entry ui.EntryView) {
 				</a>
 			</div>
 
-			<!-- Date added -->
-			if !entry.CreatedAt.IsZero() {
-				<div class="text-xs mb-1" style="color: var(--color-ink-lighter);">
-					{ ui.FormatDate(entry.CreatedAt) }
+			<!-- Date + metrics -->
+			if !entry.CreatedAt.IsZero() || entry.TimeSpentSeconds != nil || entry.Quantity != nil || entry.RuntimeSeconds != nil {
+				<div class="flex flex-wrap items-center gap-2 text-xs mb-1" style="color: var(--color-ink-lighter);">
+					if !entry.CreatedAt.IsZero() {
+						<span>Created: { ui.FormatDate(entry.CreatedAt) }</span>
+					}
+
+					if entry.TimeSpentSeconds != nil {
+						<span>
+							{ fmt.Sprintf("Time: %dm", ui.Divide(*entry.TimeSpentSeconds, 60)) }
+						</span>
+					}
+
+					if entry.Quantity != nil {
+						<span>
+							{ fmt.Sprintf("Quantity: %d", *entry.Quantity) }
+						</span>
+					}
+
+					if entry.RuntimeSeconds != nil {
+						if entry.SourceType == model.SourceTypeYouTube || entry.SourceType == model.SourceTypePodcast {
+							<span>Duration: { ui.FormatDuration(entry.RuntimeSeconds) }</span>
+						} else {
+							<span>Read Time: { ui.FormatReadingTime(entry.RuntimeSeconds) }</span>
+						}
+					}
 				</div>
 			}
 
-			<!-- Meta row -->
+			<!-- Labels/tags row -->
 			<div class="flex flex-wrap items-center gap-2 text-xs">
 				<span class={ "badge", fmt.Sprintf("badge-%s", entry.SourceType) }>
 					{ string(entry.SourceType) }
@@ -88,7 +115,7 @@ templ EntryRow(entry ui.EntryView) {
 
 				if entry.TimeSpentSeconds != nil {
 					<span style="color: var(--color-ink-lighter);">
-						{ fmt.Sprintf("%dm", ui.Divide(*entry.TimeSpentSeconds, 60)) }
+						{ ui.FormatDuration(entry.TimeSpentSeconds) }
 					</span>
 				}
 
@@ -104,6 +131,13 @@ templ EntryRow(entry ui.EntryView) {
 					}
 				}
 			</div>
+
+
+			if entry.Notes != nil && *entry.Notes != "" {
+				<p class="mt-2 text-xs leading-relaxed" style="color: var(--color-ink-light);">
+					Notes: { *entry.Notes }
+				</p>
+			}
 
 			if entry.SummaryText != nil {
 				<p class="mt-2 text-xs leading-relaxed" style="color: var(--color-ink-light);">
@@ -141,6 +175,12 @@ templ EntryRow(entry ui.EntryView) {
 	</div>
 }
 
+// enrichmentStatus returns a templ.Component that renders a status badge for the entry's enrichment state.
+// It emits a span with an appropriate CSS class and icon for each state:
+// - Pending: clock icon with title "Enrichment pending".
+// - Processing: animated spinner with title "Enriching...".
+// - OK: check icon with title "Enriched".
+// - Failed: warning (X) icon and a title containing "Enrichment failed: <error>" where <error> is the entry's EnrichmentError (empty if nil).
 templ enrichmentStatus(entry ui.EntryView) {
 	switch entry.EnrichmentStatus {
 		case model.StatusPending:
@@ -162,6 +202,11 @@ templ enrichmentStatus(entry ui.EntryView) {
 	}
 }
 
+// summaryStatus renders a status badge for an entry's summary stage when the entry's enrichment is complete.
+// 
+// When the entry's enrichment status is `StatusOK`:
+//   - `StatusPending`: renders a muted badge with the "Summary pending" title and a lines icon.
+//   - `StatusProcessing`: renders an animated muted badge with the "Summarizing..." title and a small spinner icon.
 templ summaryStatus(entry ui.EntryView) {
 	if entry.EnrichmentStatus == model.StatusOK {
 		switch entry.SummaryStatus {
