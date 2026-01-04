@@ -137,7 +137,7 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 								}
 							}
 						</div>
-						@partials.EmptyState(len(entries) == 0)
+						@partials.EmptyState(len(entries) == 0, false)
 					</div>
 				</div>
 			</main>

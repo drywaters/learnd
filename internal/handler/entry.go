@@ -123,7 +123,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	partials.EntryCount(count).Render(ctx, w)
 
 	// Render OOB swap to remove empty state
-	partials.EmptyState(false).Render(ctx, w)
+	partials.EmptyState(false, true).Render(ctx, w)
 
 	// Clear duplicate warning
 	partials.DuplicateWarning(false, "", time.Time{}).Render(ctx, w)
@@ -326,7 +326,7 @@ func (h *EntryHandler) Delete(w http.ResponseWriter, r *http.Request) {
 	partials.EntryCount(count).Render(ctx, w)
 
 	// Render OOB swap for empty state (show if no entries left)
-	partials.EmptyState(count == 0).Render(ctx, w)
+	partials.EmptyState(count == 0, true).Render(ctx, w)
 
 	if normalizedURL != "" {
 		duplicates, err := h.entryRepo.ListByNormalizedURL(ctx, normalizedURL)
