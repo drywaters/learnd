@@ -30,6 +30,11 @@ func safeString(s *string) string {
 	return *s
 }
 
+// EntryRow creates a templ.Component that renders a single entry row showing status badges, primary link/title, metadata, tags, optional notes and summary, and action controls.
+// 
+// The rendered markup includes enrichment and summary status badges and will add polling attributes when the entry requires periodic status updates.
+// Metadata may include created date, time spent, quantity, and either a duration (for audio/video) or a read time. Tags, source domain, and a duplicate-count badge are shown when present.
+// When enrichment has failed a "Retry" action is rendered that posts to the enrichment refresh endpoint; a "Delete" action is always rendered and issues a delete request with user confirmation.
 func EntryRow(entry ui.EntryView) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -461,6 +466,12 @@ func EntryRow(entry ui.EntryView) templ.Component {
 	})
 }
 
+// enrichmentStatus returns a templ.Component that renders a status badge for the entry's enrichment state.
+// It emits a span with an appropriate CSS class and icon for each state:
+// - Pending: clock icon with title "Enrichment pending".
+// - Processing: animated spinner with title "Enriching...".
+// - OK: check icon with title "Enriched".
+// - Failed: warning (X) icon and a title containing "Enrichment failed: <error>" where <error> is the entry's EnrichmentError (empty if nil).
 func enrichmentStatus(entry ui.EntryView) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -553,6 +564,11 @@ func enrichmentStatus(entry ui.EntryView) templ.Component {
 	})
 }
 
+// summaryStatus renders a status badge for an entry's summary stage when the entry's enrichment is complete.
+// 
+// When the entry's enrichment status is `StatusOK`:
+//   - `StatusPending`: renders a muted badge with the "Summary pending" title and a lines icon.
+//   - `StatusProcessing`: renders an animated muted badge with the "Summarizing..." title and a small spinner icon.
 func summaryStatus(entry ui.EntryView) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
