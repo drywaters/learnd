@@ -17,7 +17,7 @@ import (
 	"github.com/drywaters/learnd/internal/ui/partials"
 )
 
-func CapturePage(entries []ui.EntryView) templ.Component {
+func CapturePage(entries []ui.EntryView, prefillURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -58,7 +58,20 @@ func CapturePage(entries []ui.EntryView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<main class=\"max-w-4xl mx-auto px-4 py-8\"><!-- Capture Form --><div class=\"card p-6 md:p-8 mb-8\"><form id=\"capture-form\" hx-post=\"/api/entries\" hx-target=\"#entry-list\" hx-swap=\"afterbegin\" hx-on::after-request=\"if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }\"><!-- URL and Tags Row --><div class=\"flex flex-col md:flex-row gap-4 mb-4\"><div class=\"flex-grow\"><label for=\"url\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">URL</label> <input type=\"url\" id=\"url\" name=\"url\" class=\"input-field input-url w-full\" placeholder=\"https://...\" autocomplete=\"off\" autofocus required></div><div class=\"md:w-48\"><label for=\"tags\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">Tags</label> <input type=\"text\" id=\"tags\" name=\"tags\" class=\"input-field w-full\" placeholder=\"ai, tech, js\" autocomplete=\"off\"></div></div><div id=\"duplicate-warning\" class=\"mb-4\"></div><!-- Optional Fields Row --><div class=\"flex flex-col sm:flex-row gap-4 mb-6\"><div class=\"sm:w-32\"><label for=\"time_spent\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Time (min)</label> <input type=\"number\" id=\"time_spent\" name=\"time_spent\" class=\"input-field w-full text-sm\" placeholder=\"30\" min=\"1\"></div><div class=\"sm:w-32\"><label for=\"quantity\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Quantity</label> <input type=\"number\" id=\"quantity\" name=\"quantity\" class=\"input-field w-full text-sm\" placeholder=\"e.g. pages\" min=\"1\"></div><div class=\"flex-grow\"><label for=\"notes\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Notes</label> <input type=\"text\" id=\"notes\" name=\"notes\" class=\"input-field w-full text-sm\" placeholder=\"Optional notes...\"></div></div><!-- Submit Button --><div class=\"flex justify-end\"><button type=\"submit\" class=\"btn-primary flex items-center gap-2\"><span class=\"htmx-indicator animate-spin\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<main class=\"max-w-4xl mx-auto px-4 py-8\"><!-- Capture Form --><div class=\"card p-6 md:p-8 mb-8\"><form id=\"capture-form\" hx-post=\"/api/entries\" hx-target=\"#entry-list\" hx-swap=\"afterbegin\" hx-on::after-request=\"if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }\"><!-- URL and Tags Row --><div class=\"flex flex-col md:flex-row gap-4 mb-4\"><div class=\"flex-grow\"><label for=\"url\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">URL</label> <input type=\"url\" id=\"url\" name=\"url\" value=\"")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			var templ_7745c5c3_Var3 string
+			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(prefillURL)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/capture.templ`, Line: 37, Col: 27}
+			}
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\" class=\"input-field input-url w-full\" placeholder=\"https://...\" autocomplete=\"off\" autofocus required></div><div class=\"md:w-48\"><label for=\"tags\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">Tags</label> <input type=\"text\" id=\"tags\" name=\"tags\" class=\"input-field w-full\" placeholder=\"ai, tech, js\" autocomplete=\"off\"></div></div><div id=\"duplicate-warning\" class=\"mb-4\"></div><!-- Optional Fields Row --><div class=\"flex flex-col sm:flex-row gap-4 mb-6\"><div class=\"sm:w-32\"><label for=\"time_spent\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Time (min)</label> <input type=\"number\" id=\"time_spent\" name=\"time_spent\" class=\"input-field w-full text-sm\" placeholder=\"30\" min=\"1\"></div><div class=\"sm:w-32\"><label for=\"quantity\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Quantity</label> <input type=\"number\" id=\"quantity\" name=\"quantity\" class=\"input-field w-full text-sm\" placeholder=\"e.g. pages\" min=\"1\"></div><div class=\"flex-grow\"><label for=\"notes\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Notes</label> <input type=\"text\" id=\"notes\" name=\"notes\" class=\"input-field w-full text-sm\" placeholder=\"Optional notes...\"></div></div><!-- Submit Button --><div class=\"flex justify-end\"><button type=\"submit\" class=\"btn-primary flex items-center gap-2\"><span class=\"htmx-indicator animate-spin\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -66,35 +79,35 @@ func CapturePage(entries []ui.EntryView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "</span> <span>Save Entry</span></button></div></form></div><!-- Entries Section --><div><div class=\"flex items-center justify-between mb-4\"><h2 class=\"font-display text-lg font-medium\" style=\"color: var(--color-ink);\">Recent Entries</h2><span id=\"entry-count\" class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "</span> <span>Save Entry</span></button></div></form></div><!-- Entries Section --><div><div class=\"flex items-center justify-between mb-4\"><h2 class=\"font-display text-lg font-medium\" style=\"color: var(--color-ink);\">Recent Entries</h2><span id=\"entry-count\" class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			var templ_7745c5c3_Var3 string
-			templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(entries)))
+			var templ_7745c5c3_Var4 string
+			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(fmt.Sprintf("%d", len(entries)))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/capture.templ`, Line: 122, Col: 40}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/capture.templ`, Line: 123, Col: 40}
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, " ")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, " ")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(entries) == 1 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "entry")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "entry")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			} else {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "entries")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "entries")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span></div><div class=\"card overflow-hidden\"><div id=\"entry-list\" class=\"divide-y\" style=\"border-color: var(--color-warm-gray);\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></div><div class=\"card overflow-hidden\"><div id=\"entry-list\" class=\"divide-y\" style=\"border-color: var(--color-warm-gray);\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -106,12 +119,12 @@ func CapturePage(entries []ui.EntryView) templ.Component {
 					}
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<div id=\"empty-state\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div id=\"empty-state\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if len(entries) == 0 {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<div class=\"p-8 text-center\" style=\"color: var(--color-ink-lighter);\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<div class=\"p-8 text-center\" style=\"color: var(--color-ink-lighter);\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -119,12 +132,12 @@ func CapturePage(entries []ui.EntryView) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "<p class=\"text-sm\">No entries yet. Start capturing!</p></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<p class=\"text-sm\">No entries yet. Start capturing!</p></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "</div></div></div></div></main></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div></div></div></div></main></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

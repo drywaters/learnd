@@ -34,7 +34,10 @@ func (h *CaptureHandler) CapturePage(w http.ResponseWriter, r *http.Request) {
 
 	entryViews := buildEntryViews(ctx, h.entryRepo, entries)
 
-	if err := pages.CapturePage(entryViews).Render(ctx, w); err != nil {
+	// Check for URL prefill from query param
+	prefillURL := r.URL.Query().Get("url")
+
+	if err := pages.CapturePage(entryViews, prefillURL).Render(ctx, w); err != nil {
 		// Log only - response may already be partially written, can't send clean http.Error
 		slog.Error("failed to render page", "handler", "CapturePage", "error", err)
 	}
