@@ -1,0 +1,287 @@
+package pages
+
+import (
+	"fmt"
+	"strings"
+
+	"github.com/drywaters/learnd/internal/model"
+	"github.com/drywaters/learnd/internal/ui"
+	"github.com/drywaters/learnd/internal/ui/components"
+	"github.com/drywaters/learnd/internal/ui/layout"
+)
+
+templ EditPage(entry ui.EntryView) {
+	@layout.Base("Edit Entry - learnd") {
+		<div class="min-h-screen">
+			@components.CaptureHeader()
+
+			<main class="max-w-4xl mx-auto px-4 py-8">
+				<div class="card p-6 md:p-8">
+					<h1 class="font-display text-xl font-semibold mb-6" style="color: var(--color-ink);">
+						Edit Entry
+					</h1>
+
+					<!-- Read-only context -->
+					<div class="mb-6 p-4 rounded-lg" style="background: var(--color-cream);">
+						<div class="flex flex-col gap-2 text-sm">
+							<div class="flex items-center">
+								<span class="font-medium w-20" style="color: var(--color-ink-light);">URL</span>
+								<a
+									href={ templ.SafeURL(entry.SourceURL) }
+									target="_blank"
+									rel="noopener noreferrer"
+									class="truncate hover:underline"
+									style="color: var(--color-accent);"
+								>
+									{ truncateURL(entry.SourceURL, 50) }
+								</a>
+							</div>
+							<div class="flex items-center">
+								<span class="font-medium w-20" style="color: var(--color-ink-light);">Created</span>
+								<span style="color: var(--color-ink);">{ ui.FormatDate(entry.CreatedAt) }</span>
+							</div>
+							if entry.Domain != nil {
+								<div class="flex items-center">
+									<span class="font-medium w-20" style="color: var(--color-ink-light);">Domain</span>
+									<span style="color: var(--color-ink);">{ *entry.Domain }</span>
+								</div>
+							}
+						</div>
+					</div>
+
+					<form
+						hx-put={ fmt.Sprintf("/api/entries/%s", entry.ID) }
+						hx-swap="none"
+					>
+						<!-- User Fields Section -->
+						<div class="mb-6">
+							<h2 class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--color-ink-lighter);">
+								User Fields
+							</h2>
+
+							<div class="space-y-4">
+								<div class="flex flex-col sm:flex-row gap-4">
+									<div class="flex-grow">
+										<label for="tags" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+											Tags
+										</label>
+										<input
+											type="text"
+											id="tags"
+											name="tags"
+											value={ strings.Join(entry.Tags, ", ") }
+											class="input-field w-full text-sm"
+											placeholder="ai, tech, js"
+											autocomplete="off"
+										/>
+									</div>
+									<div class="sm:w-32">
+										<label for="time_spent" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+											Time (min)
+										</label>
+										<input
+											type="number"
+											id="time_spent"
+											name="time_spent"
+											value={ formatTimeSpentMinutes(entry.TimeSpentSeconds) }
+											class="input-field w-full text-sm"
+											placeholder="30"
+											min="1"
+										/>
+									</div>
+									<div class="sm:w-32">
+										<label for="quantity" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+											Quantity
+										</label>
+										<input
+											type="number"
+											id="quantity"
+											name="quantity"
+											value={ formatQuantity(entry.Quantity) }
+											class="input-field w-full text-sm"
+											placeholder="e.g. pages"
+											min="1"
+										/>
+									</div>
+								</div>
+
+								<div>
+									<label for="notes" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+										Notes
+									</label>
+									<textarea
+										id="notes"
+										name="notes"
+										class="input-field w-full text-sm"
+										rows="2"
+										placeholder="Optional notes..."
+									>{ safeString(entry.Notes) }</textarea>
+								</div>
+							</div>
+						</div>
+
+						<!-- Content Fields Section -->
+						<div class="mb-6">
+							<h2 class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--color-ink-lighter);">
+								Content Fields
+							</h2>
+
+							<div class="space-y-4">
+								<div>
+									<label for="title" class="block text-sm font-medium mb-1.5" style="color: var(--color-ink-light);">
+										Title
+									</label>
+									<input
+										type="text"
+										id="title"
+										name="title"
+										value={ safeString(entry.Title) }
+										class="input-field w-full"
+										placeholder="Entry title"
+										autocomplete="off"
+									/>
+								</div>
+
+								<div>
+									<label for="description" class="block text-sm font-medium mb-1.5" style="color: var(--color-ink-light);">
+										Description
+									</label>
+									<input
+										type="text"
+										id="description"
+										name="description"
+										value={ safeString(entry.Description) }
+										class="input-field w-full"
+										placeholder="Entry description..."
+									/>
+								</div>
+
+								<div>
+									<label for="summary" class="block text-sm font-medium mb-1.5" style="color: var(--color-ink-light);">
+										Summary
+									</label>
+									<textarea
+										id="summary"
+										name="summary"
+										class="input-field w-full"
+										rows="4"
+										placeholder="AI-generated or custom summary..."
+									>{ safeString(entry.SummaryText) }</textarea>
+								</div>
+							</div>
+						</div>
+
+						<!-- Classification Section -->
+						<div class="mb-6">
+							<h2 class="text-xs font-semibold uppercase tracking-wide mb-4" style="color: var(--color-ink-lighter);">
+								Classification
+							</h2>
+
+							<div>
+								<label for="source_type" class="block text-sm font-medium mb-1.5" style="color: var(--color-ink-light);">
+									Source Type
+								</label>
+								<select
+									id="source_type"
+									name="source_type"
+									class="input-field input-select w-full"
+								>
+									<option value="youtube" selected?={ entry.SourceType == model.SourceTypeYouTube }>YouTube</option>
+									<option value="podcast" selected?={ entry.SourceType == model.SourceTypePodcast }>Podcast</option>
+									<option value="article" selected?={ entry.SourceType == model.SourceTypeArticle }>Article</option>
+									<option value="doc" selected?={ entry.SourceType == model.SourceTypeDoc }>Documentation</option>
+									<option value="other" selected?={ entry.SourceType == model.SourceTypeOther }>Other</option>
+								</select>
+							</div>
+						</div>
+
+						<!-- Actions -->
+						<div class="flex items-center justify-between pt-6 border-t" style="border-color: var(--color-warm-gray);">
+							<!-- Re-sync actions (left side) -->
+							<div class="flex items-center gap-2">
+								<button
+									type="button"
+									hx-post={ fmt.Sprintf("/api/entries/%s/refresh-enrichment", entry.ID) }
+									hx-swap="none"
+									class="btn-secondary flex items-center gap-1.5"
+									title="Re-fetch metadata from source"
+								>
+									@components.RefreshIcon()
+									<span>Re-fetch</span>
+								</button>
+								<button
+									type="button"
+									hx-post={ fmt.Sprintf("/api/entries/%s/refresh-summary", entry.ID) }
+									hx-swap="none"
+									class="btn-secondary flex items-center gap-1.5"
+									title="Regenerate AI summary"
+								>
+									@components.RefreshIcon()
+									<span>Re-summarize</span>
+								</button>
+							</div>
+
+							<!-- Main actions (right side) -->
+							<div class="flex items-center gap-3">
+								<a
+									href="/"
+									class="btn-secondary"
+								>
+									Cancel
+								</a>
+								<button type="submit" class="btn-primary flex items-center gap-2">
+									<span class="htmx-indicator animate-spin">
+										@components.SpinnerIcon()
+									</span>
+									<span>Save Changes</span>
+								</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</main>
+		</div>
+
+		@editScript()
+	}
+}
+
+templ editScript() {
+	<script>
+		// Only redirect after the edit form is successfully submitted
+		document.querySelector('form[hx-put]').addEventListener('htmx:afterRequest', function(evt) {
+			if (evt.detail.successful) {
+				window.location.href = '/';
+			}
+		});
+	</script>
+}
+
+func safeString(s *string) string {
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
+func formatTimeSpentMinutes(seconds *int) string {
+	if seconds == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *seconds/60)
+}
+
+func formatQuantity(q *int) string {
+	if q == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", *q)
+}
+
+func truncateURL(url string, maxLen int) string {
+	if len(url) <= maxLen {
+		return url
+	}
+	return url[:maxLen-3] + "..."
+}
+

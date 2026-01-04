@@ -135,7 +135,7 @@ templ EntryRow(entry ui.EntryView) {
 		</div>
 
 		<!-- Actions -->
-		<div class="flex items-center gap-2 sm:ml-4">
+		<div class="flex items-center gap-3 sm:ml-4">
 			if entry.EnrichmentStatus == model.StatusFailed {
 				<button
 					hx-post={ fmt.Sprintf("/api/entries/%s/refresh-enrichment", entry.ID) }
@@ -148,6 +148,14 @@ templ EntryRow(entry ui.EntryView) {
 					Retry
 				</button>
 			}
+
+			<a
+				href={ templ.SafeURL(fmt.Sprintf("/entries/%s/edit", entry.ID)) }
+				class="text-xs hover:underline"
+				style="color: var(--color-accent);"
+			>
+				Edit
+			</a>
 
 			<button
 				hx-delete={ fmt.Sprintf("/api/entries/%s", entry.ID) }
