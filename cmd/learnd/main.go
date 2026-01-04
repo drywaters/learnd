@@ -106,7 +106,7 @@ func run() error {
 	bgWorker.Start(ctx)
 
 	// Initialize session store (24-hour TTL for sessions)
-	sessions := session.NewStore(24 * time.Hour)
+	sessions := session.NewStore(pool, 24*time.Hour)
 
 	// Create server
 	srv := server.New(cfg, entryRepo, summaryCacheRepo, sessions)
