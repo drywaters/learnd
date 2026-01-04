@@ -142,5 +142,20 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 				</div>
 			</main>
 		</div>
+		@keyboardSubmitScript()
 	}
+}
+
+templ keyboardSubmitScript() {
+	<script>
+		document.addEventListener('keydown', function(e) {
+			if (e.shiftKey && e.key === 'Enter') {
+				e.preventDefault();
+				const form = document.getElementById('capture-form');
+				if (form) {
+					htmx.trigger(form, 'submit');
+				}
+			}
+		});
+	</script>
 }
