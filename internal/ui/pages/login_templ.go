@@ -13,7 +13,7 @@ import (
 	"github.com/drywaters/learnd/internal/ui/layout"
 )
 
-func LoginPage(errorType string) templ.Component {
+func LoginPage(errorType string, redirectURL string) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
 		if templ_7745c5c3_CtxErr := ctx.Err(); templ_7745c5c3_CtxErr != nil {
@@ -46,12 +46,35 @@ func LoginPage(errorType string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"w-full max-w-sm\"><!-- Logo --><div class=\"text-center mb-12\"><h1 class=\"font-display text-4xl font-semibold tracking-tight mb-2\" style=\"color: var(--color-ink);\">learnd</h1><p class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">Your personal learning journal</p></div><!-- Login Card --><div class=\"card p-8\"><form method=\"POST\" action=\"/login\" class=\"space-y-6\" hx-boost=\"false\"><div><label for=\"api_key\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">API Key</label> <input type=\"password\" id=\"api_key\" name=\"api_key\" class=\"input-field w-full\" placeholder=\"Enter your API key\" autocomplete=\"current-password\" autofocus required></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<div class=\"min-h-screen flex items-center justify-center px-4\"><div class=\"w-full max-w-sm\"><!-- Logo --><div class=\"text-center mb-12\"><h1 class=\"font-display text-4xl font-semibold tracking-tight mb-2\" style=\"color: var(--color-ink);\">learnd</h1><p class=\"text-sm\" style=\"color: var(--color-ink-lighter);\">Your personal learning journal</p></div><!-- Login Card --><div class=\"card p-8\"><form method=\"POST\" action=\"/login\" class=\"space-y-6\" hx-boost=\"false\">")
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			if redirectURL != "" {
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<input type=\"hidden\" name=\"redirect\" value=\"")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				var templ_7745c5c3_Var3 string
+				templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(redirectURL)
+				if templ_7745c5c3_Err != nil {
+					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/ui/pages/login.templ`, Line: 26, Col: 63}
+				}
+				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "\">")
+				if templ_7745c5c3_Err != nil {
+					return templ_7745c5c3_Err
+				}
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "<div><label for=\"api_key\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">API Key</label> <input type=\"password\" id=\"api_key\" name=\"api_key\" class=\"input-field w-full\" placeholder=\"Enter your API key\" autocomplete=\"current-password\" autofocus required></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			if errorType != "" {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<div class=\"flex items-center gap-2 text-sm p-3 rounded-lg\" style=\"background: #FEF2F2; color: var(--color-error);\">")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "<div class=\"flex items-center gap-2 text-sm p-3 rounded-lg\" style=\"background: #FEF2F2; color: var(--color-error);\">")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
@@ -59,32 +82,32 @@ func LoginPage(errorType string) templ.Component {
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 3, "<span>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "<span>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 				if errorType == "invalid_key" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 4, "Invalid API key. Please try again.")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "Invalid API key. Please try again.")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else if errorType == "missing_key" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 5, "Please enter your API key.")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "Please enter your API key.")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				} else if errorType == "invalid_request" {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 6, "Invalid request. Please try again.")
+					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "Invalid request. Please try again.")
 					if templ_7745c5c3_Err != nil {
 						return templ_7745c5c3_Err
 					}
 				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "</span></div>")
+				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</span></div>")
 				if templ_7745c5c3_Err != nil {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "<button type=\"submit\" class=\"btn-primary w-full\">Sign In</button></form></div><!-- Footer --><p class=\"text-center mt-8 text-xs\" style=\"color: var(--color-ink-lighter);\">Track your learning. Review your growth.</p></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<button type=\"submit\" class=\"btn-primary w-full\">Sign In</button></form></div><!-- Footer --><p class=\"text-center mt-8 text-xs\" style=\"color: var(--color-ink-lighter);\">Track your learning. Review your growth.</p></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

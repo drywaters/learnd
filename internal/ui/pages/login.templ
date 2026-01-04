@@ -5,7 +5,7 @@ import (
 	"github.com/drywaters/learnd/internal/ui/layout"
 )
 
-templ LoginPage(errorType string) {
+templ LoginPage(errorType string, redirectURL string) {
 	@layout.Base("Sign In - learnd") {
 		<div class="min-h-screen flex items-center justify-center px-4">
 			<div class="w-full max-w-sm">
@@ -22,6 +22,9 @@ templ LoginPage(errorType string) {
 				<!-- Login Card -->
 				<div class="card p-8">
 					<form method="POST" action="/login" class="space-y-6" hx-boost="false">
+						if redirectURL != "" {
+							<input type="hidden" name="redirect" value={ redirectURL }/>
+						}
 						<div>
 							<label for="api_key" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 								API Key
