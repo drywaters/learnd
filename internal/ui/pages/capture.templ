@@ -150,6 +150,7 @@ templ keyboardSubmitScript() {
 	<script>
 		document.addEventListener('keydown', function(e) {
 			if (e.shiftKey && e.key === 'Enter') {
+				e.preventDefault();
 				const form = document.getElementById('capture-form');
 				if (form) {
 					htmx.trigger(form, 'submit');
