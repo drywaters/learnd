@@ -11,7 +11,7 @@ import (
 type Config struct {
 	Port          string
 	DatabaseURL   string
-	APIKeyHash    string
+	APIToken      string
 	GeminiAPIKey  string
 	YouTubeAPIKey string
 	LogLevel      string
@@ -31,11 +31,9 @@ func Load() (*Config, error) {
 	if cfg.DatabaseURL, err = getEnvOrFile("DATABASE_URL", "/run/secrets/learnd_database_url"); err != nil {
 		return nil, err
 	}
-	if cfg.APIKeyHash, err = getEnvOrFile("API_KEY_HASH", "/run/secrets/learnd_api_key_hash"); err != nil {
+	if cfg.APIToken, err = getEnvOrFile("API_TOKEN", "/run/secrets/learnd_api_token"); err != nil {
 		return nil, err
 	}
-	// Normalize bcrypt hash: un-escape $$ to $ (handles both Makefile $$ and Docker Swarm $ formats)
-	cfg.APIKeyHash = normalizeBcryptHash(cfg.APIKeyHash)
 	if cfg.GeminiAPIKey, err = getEnvOrFile("GEMINI_API_KEY", "/run/secrets/learnd_gemini_api_key"); err != nil {
 		return nil, err
 	}
@@ -56,8 +54,8 @@ func Load() (*Config, error) {
 	if cfg.DatabaseURL == "" {
 		return nil, fmt.Errorf("DATABASE_URL is required")
 	}
-	if cfg.APIKeyHash == "" {
-		return nil, fmt.Errorf("API_KEY_HASH is required")
+	if cfg.APIToken == "" {
+		return nil, fmt.Errorf("API_TOKEN is required")
 	}
 
 	return cfg, nil
@@ -124,12 +122,4 @@ func readSecret(path, name string) (string, error) {
 		return "", fmt.Errorf("config: %s (%s) is empty", name, path)
 	}
 	return value, nil
-}
-
-// normalizeBcryptHash normalizes bcrypt hash by replacing $$ with $.
-// This allows the same hash format to work in both Makefile environments (which use $$)
-// and Docker Swarm secrets (which use $). The function is idempotent - already
-// normalized hashes remain unchanged.
-func normalizeBcryptHash(hash string) string {
-	return strings.ReplaceAll(hash, "$$", "$")
 }
