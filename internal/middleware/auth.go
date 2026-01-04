@@ -29,7 +29,7 @@ func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.H
 					MaxAge:   -1,
 					HttpOnly: true,
 					Secure:   secureCookies,
-					SameSite: http.SameSiteStrictMode,
+					SameSite: http.SameSiteLaxMode,
 				})
 				redirectToLogin(w, r)
 				return
