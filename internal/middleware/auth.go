@@ -45,11 +45,7 @@ func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.H
 
 // redirectToLogin redirects to login page, preserving the original URL
 func redirectToLogin(w http.ResponseWriter, r *http.Request) {
-	// Build the original URL to return to after login
-	originalURL := r.URL.Path
-	if r.URL.RawQuery != "" {
-		originalURL += "?" + r.URL.RawQuery
-	}
+	originalURL := r.URL.String()
 
 	// Only add redirect param if not going to root
 	loginURL := "/login"

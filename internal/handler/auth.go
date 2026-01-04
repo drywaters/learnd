@@ -2,7 +2,7 @@ package handler
 
 import (
 	"net/http"
-	"strings"
+	"net/url"
 
 	"github.com/drywaters/learnd/internal/session"
 	"github.com/drywaters/learnd/internal/ui/pages"
@@ -88,9 +88,13 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 }
 
 // isValidRedirect checks that the redirect URL is safe (relative path only)
-func isValidRedirect(url string) bool {
-	// Must start with / and not contain // (prevents protocol-relative URLs)
-	return strings.HasPrefix(url, "/") && !strings.HasPrefix(url, "//")
+func isValidRedirect(rawURL string) bool {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	// Must be a relative path with no scheme or host (prevents open redirect)
+	return parsed.Scheme == "" && parsed.Host == "" && len(parsed.Path) > 0 && parsed.Path[0] == '/'
 }
 
 // Logout clears the session cookie and invalidates the session
