@@ -107,6 +107,24 @@ templ EntryRow(entry ui.EntryView) {
 						{ fmt.Sprintf("Duplicate x%d", entry.DuplicateCount) }
 					</span>
 				}
+
+				if entry.TimeSpentSeconds != nil {
+					<span style="color: var(--color-ink-lighter);">
+						{ ui.FormatDuration(entry.TimeSpentSeconds) }
+					</span>
+				}
+
+				if entry.RuntimeSeconds != nil {
+					if entry.SourceType == model.SourceTypeYouTube || entry.SourceType == model.SourceTypePodcast {
+						<span style="color: var(--color-ink-lighter);">
+							duration { ui.FormatDuration(entry.RuntimeSeconds) }
+						</span>
+					} else {
+						<span style="color: var(--color-ink-lighter);">
+							read time { ui.FormatReadingTime(entry.RuntimeSeconds) }
+						</span>
+					}
+				}
 			</div>
 
 
