@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/drywaters/learnd/internal/session"
 	"github.com/drywaters/learnd/internal/ui/pages"
@@ -37,7 +38,8 @@ func (h *AuthHandler) LoginPage(w http.ResponseWriter, r *http.Request) {
 	}
 
 	errorType := r.URL.Query().Get("error")
-	pages.LoginPage(errorType).Render(r.Context(), w)
+	redirectURL := r.URL.Query().Get("redirect")
+	pages.LoginPage(errorType, redirectURL).Render(r.Context(), w)
 }
 
 // Login handles the login form submission
@@ -77,7 +79,22 @@ func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
 		// No MaxAge = session cookie (expires when browser closes)
 	})
 
-	http.Redirect(w, r, "/", http.StatusSeeOther)
+	// Redirect to the original URL if provided, otherwise home
+	redirectURL := r.FormValue("redirect")
+	if redirectURL == "" || !isValidRedirect(redirectURL) {
+		redirectURL = "/"
+	}
+	http.Redirect(w, r, redirectURL, http.StatusSeeOther)
+}
+
+// isValidRedirect checks that the redirect URL is safe (relative path only)
+func isValidRedirect(rawURL string) bool {
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	// Must be a relative path with no scheme or host (prevents open redirect)
+	return parsed.Scheme == "" && parsed.Host == "" && len(parsed.Path) > 0 && parsed.Path[0] == '/'
 }
 
 // Logout clears the session cookie and invalidates the session

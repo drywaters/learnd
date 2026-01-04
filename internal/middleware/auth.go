@@ -2,6 +2,7 @@ package middleware
 
 import (
 	"net/http"
+	"net/url"
 
 	"github.com/drywaters/learnd/internal/session"
 )
@@ -14,23 +15,23 @@ func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.H
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			cookie, err := r.Cookie(cookieName)
 			if err != nil {
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				redirectToLogin(w, r)
 				return
 			}
 
 			// O(1) token lookup instead of expensive bcrypt comparison
 			if !sessions.Valid(cookie.Value) {
-			// Invalid/expired session, clear cookie and redirect
-			http.SetCookie(w, &http.Cookie{
-				Name:     cookieName,
-				Value:    "",
-				Path:     "/",
-				MaxAge:   -1,
-				HttpOnly: true,
-				Secure:   secureCookies,
-				SameSite: http.SameSiteStrictMode,
-			})
-				http.Redirect(w, r, "/login", http.StatusSeeOther)
+				// Invalid/expired session, clear cookie and redirect
+				http.SetCookie(w, &http.Cookie{
+					Name:     cookieName,
+					Value:    "",
+					Path:     "/",
+					MaxAge:   -1,
+					HttpOnly: true,
+					Secure:   secureCookies,
+					SameSite: http.SameSiteStrictMode,
+				})
+				redirectToLogin(w, r)
 				return
 			}
 
@@ -40,4 +41,17 @@ func Auth(sessions *session.Store, secureCookies bool) func(http.Handler) http.H
 			next.ServeHTTP(w, r)
 		})
 	}
+}
+
+// redirectToLogin redirects to login page, preserving the original URL
+func redirectToLogin(w http.ResponseWriter, r *http.Request) {
+	originalURL := r.URL.String()
+
+	// Only add redirect param if not going to root
+	loginURL := "/login"
+	if originalURL != "/" {
+		loginURL = "/login?redirect=" + url.QueryEscape(originalURL)
+	}
+
+	http.Redirect(w, r, loginURL, http.StatusSeeOther)
 }
