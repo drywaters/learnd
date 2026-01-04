@@ -9,7 +9,7 @@ import (
 	"github.com/drywaters/learnd/internal/ui/partials"
 )
 
-templ CapturePage(entries []ui.EntryView) {
+templ CapturePage(entries []ui.EntryView, prefillURL string) {
 	@layout.Base("Capture - learnd") {
 		<div class="min-h-screen">
 			@components.CaptureHeader()
@@ -34,6 +34,7 @@ templ CapturePage(entries []ui.EntryView) {
 									type="url"
 									id="url"
 									name="url"
+									value={ prefillURL }
 									class="input-field input-url w-full"
 									placeholder="https://..."
 									autocomplete="off"
