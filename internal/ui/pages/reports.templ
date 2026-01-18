@@ -29,9 +29,9 @@ templ ReportsPage() {
 						hx-target="#report-results"
 						hx-swap="innerHTML"
 					>
-						<div class="flex flex-col gap-4 items-start">
-							<div class="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-								<div>
+						<div class="flex flex-col gap-4 items-stretch">
+							<div class="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full">
+								<div class="w-full sm:w-auto">
 									<label for="start" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 										Start Date
 									</label>
@@ -42,7 +42,7 @@ templ ReportsPage() {
 										class="input-field w-full sm:w-44"
 									/>
 								</div>
-								<div>
+								<div class="w-full sm:w-auto">
 									<label for="end" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 										End Date
 									</label>
