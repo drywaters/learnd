@@ -30,7 +30,7 @@ templ ReportsPage() {
 						hx-swap="innerHTML"
 					>
 						<div class="flex flex-wrap items-end gap-4">
-							<div class="w-full sm:flex-1 md:flex-none md:w-auto min-w-0">
+							<div class="flex-1 min-w-[220px]">
 								<label for="start" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 									Start Date
 								</label>
@@ -38,10 +38,10 @@ templ ReportsPage() {
 									type="date"
 									id="start"
 									name="start"
-									class="input-field w-full md:w-auto"
+									class="input-field w-full"
 								/>
 							</div>
-							<div class="w-full sm:flex-1 md:flex-none md:w-auto min-w-0">
+							<div class="flex-1 min-w-[220px]">
 								<label for="end" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 									End Date
 								</label>
@@ -49,17 +49,17 @@ templ ReportsPage() {
 									type="date"
 									id="end"
 									name="end"
-									class="input-field w-full md:w-auto"
+									class="input-field w-full"
 								/>
 							</div>
-							<div class="flex w-full md:w-auto self-end gap-2">
-								<button type="submit" class="btn-primary basis-1/2 md:basis-auto px-6 py-3 text-sm inline-flex items-center justify-center">
+							<div class="flex w-full sm:w-auto self-end gap-2 shrink-0">
+								<button type="submit" class="btn-primary basis-1/2 sm:basis-auto px-6 py-3 text-sm inline-flex items-center justify-center whitespace-nowrap">
 									Generate Report
 								</button>
 								<a
 									id="export-link"
 									href="/api/reports/export"
-									class="btn-secondary basis-1/2 md:basis-auto inline-flex items-center gap-2 justify-center px-4 py-2.5 text-sm"
+									class="btn-secondary basis-1/2 sm:basis-auto inline-flex items-center gap-2 justify-center px-4 py-2.5 text-sm whitespace-nowrap"
 									hx-boost="false"
 								>
 									@components.DownloadIcon()
