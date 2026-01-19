@@ -22,6 +22,13 @@ func safeString(s *string) string {
 	return *s
 }
 
+templ entryStatusIcons(entry ui.EntryView) {
+	<div class="flex items-center gap-2 shrink-0">
+		@enrichmentStatus(entry)
+		@summaryStatus(entry)
+	</div>
+}
+
 // EntryRow creates a templ.Component that renders a single entry row showing status badges, primary link/title, metadata, tags, optional notes and summary, and action controls.
 // 
 // The rendered markup includes enrichment and summary status badges and will add polling attributes when the entry requires periodic status updates.
@@ -43,10 +50,7 @@ templ EntryRow(entry ui.EntryView) {
 		<!-- Content -->
 		<div class="flex-grow min-w-0">
 			<div class="flex items-center gap-2 mb-1">
-				<div class="flex items-center gap-2 shrink-0">
-					@enrichmentStatus(entry)
-					@summaryStatus(entry)
-				</div>
+				@entryStatusIcons(entry)
 				<a
 					href={ templ.SafeURL(entry.SourceURL) }
 					target="_blank"

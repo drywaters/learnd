@@ -29,8 +29,8 @@ templ ReportsPage() {
 						hx-target="#report-results"
 						hx-swap="innerHTML"
 					>
-						<div class="flex flex-wrap items-end gap-4">
-							<div class="flex-1 min-w-[220px]">
+						<div class="grid gap-4 sm:grid-cols-2 items-end">
+							<div class="min-w-[220px]">
 								<label for="start" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 									Start Date
 								</label>
@@ -41,7 +41,7 @@ templ ReportsPage() {
 									class="input-field w-full"
 								/>
 							</div>
-							<div class="flex-1 min-w-[220px]">
+							<div class="min-w-[220px]">
 								<label for="end" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
 									End Date
 								</label>
@@ -52,20 +52,18 @@ templ ReportsPage() {
 									class="input-field w-full"
 								/>
 							</div>
-							<div class="flex w-full sm:w-auto self-end gap-2 shrink-0">
-								<button type="submit" class="btn-primary basis-1/2 sm:basis-auto px-6 py-3 text-sm inline-flex items-center justify-center whitespace-nowrap">
-									Generate Report
-								</button>
-								<a
-									id="export-link"
-									href="/api/reports/export"
-									class="btn-secondary basis-1/2 sm:basis-auto inline-flex items-center gap-2 justify-center px-4 py-2.5 text-sm whitespace-nowrap"
-									hx-boost="false"
-								>
-									@components.DownloadIcon()
-									CSV
-								</a>
-							</div>
+							<button type="submit" class="btn-primary w-full px-6 py-3 text-sm inline-flex items-center justify-center whitespace-nowrap">
+								Generate Report
+							</button>
+							<a
+								id="export-link"
+								href="/api/reports/export"
+								class="btn-secondary w-full inline-flex items-center gap-2 justify-center px-4 py-2.5 text-sm whitespace-nowrap"
+								hx-boost="false"
+							>
+								@components.DownloadIcon()
+								CSV
+							</a>
 						</div>
 					</form>
 				</div>
