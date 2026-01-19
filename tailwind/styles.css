@@ -123,6 +123,8 @@
 		border-radius: 6px;
 		font-size: 0.875rem;
 		transition: all 0.2s ease;
+		display: inline-flex;
+		align-items: center;
 	}
 
 	.btn-secondary:hover {
