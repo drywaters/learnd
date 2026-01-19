@@ -40,15 +40,13 @@ templ EntryRow(entry ui.EntryView) {
 			hx-swap="outerHTML"
 		}
 	>
-		<!-- Status Icons -->
-		<div class="flex items-center gap-2 sm:w-12">
-			@enrichmentStatus(entry)
-			@summaryStatus(entry)
-		</div>
-
 		<!-- Content -->
 		<div class="flex-grow min-w-0">
-			<div class="flex items-start gap-2 mb-1">
+			<div class="flex items-center gap-2 mb-1">
+				<div class="flex items-center gap-2 shrink-0">
+					@enrichmentStatus(entry)
+					@summaryStatus(entry)
+				</div>
 				<a
 					href={ templ.SafeURL(entry.SourceURL) }
 					target="_blank"
