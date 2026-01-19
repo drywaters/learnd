@@ -2,6 +2,19 @@ package partials
 
 import "fmt"
 
+// formatDuration formats minutes as "X hr Y min" when >= 60, otherwise "X min"
+func formatDuration(minutes int) string {
+	if minutes >= 60 {
+		hours := minutes / 60
+		mins := minutes % 60
+		if mins == 0 {
+			return fmt.Sprintf("%d hr", hours)
+		}
+		return fmt.Sprintf("%d hr %d min", hours, mins)
+	}
+	return fmt.Sprintf("%d min", minutes)
+}
+
 // TagReport represents aggregated data for a single tag
 type TagReport struct {
 	Tag   string
@@ -44,10 +57,10 @@ templ ReportResults(data ReportData) {
 			</div>
 			<div class="card p-4 text-center">
 				<div class="text-2xl font-display font-semibold" style="color: var(--color-ink);">
-					{ fmt.Sprintf("%d", data.TotalTime) }
+					{ formatDuration(data.TotalTime) }
 				</div>
 				<div class="text-xs mt-1" style="color: var(--color-ink-lighter);">
-					Minutes Tracked
+					Time Tracked
 				</div>
 			</div>
 			<div class="card p-4 text-center">
@@ -78,9 +91,8 @@ templ ReportResults(data ReportData) {
 						<span class="uppercase tracking-wide">Total</span>
 						<div class="flex items-center gap-6 text-sm">
 							if data.TotalTagTime > 0 {
-								<div class="text-right w-20">
-									<span class="font-medium" style="color: var(--color-ink);">{ fmt.Sprintf("%d", data.TotalTagTime) }</span>
-									<span style="color: var(--color-ink-lighter);"> min</span>
+								<div class="text-right w-28">
+									<span class="font-medium" style="color: var(--color-ink);">{ formatDuration(data.TotalTagTime) }</span>
 								</div>
 							}
 							<div class="text-right w-24">
@@ -99,9 +111,8 @@ templ ReportResults(data ReportData) {
 						</div>
 						<div class="flex items-center gap-6 text-sm">
 							if tag.Time > 0 {
-								<div class="text-right w-20">
-									<span class="font-medium" style="color: var(--color-ink);">{ fmt.Sprintf("%d", tag.Time) }</span>
-									<span style="color: var(--color-ink-lighter);"> min</span>
+								<div class="text-right w-28">
+									<span class="font-medium" style="color: var(--color-ink);">{ formatDuration(tag.Time) }</span>
 								</div>
 							}
 							<div class="text-right w-24">
@@ -125,9 +136,8 @@ templ ReportResults(data ReportData) {
 						<span class="uppercase tracking-wide">Total</span>
 						<div class="flex items-center gap-6 text-sm">
 							if data.TotalTypeTime > 0 {
-								<div class="text-right w-20">
-									<span class="font-medium" style="color: var(--color-ink);">{ fmt.Sprintf("%d", data.TotalTypeTime) }</span>
-									<span style="color: var(--color-ink-lighter);"> min</span>
+								<div class="text-right w-28">
+									<span class="font-medium" style="color: var(--color-ink);">{ formatDuration(data.TotalTypeTime) }</span>
 								</div>
 							}
 							<div class="text-right w-24">
@@ -146,9 +156,8 @@ templ ReportResults(data ReportData) {
 						</div>
 						<div class="flex items-center gap-6 text-sm">
 							if typ.Time > 0 {
-								<div class="text-right w-20">
-									<span class="font-medium" style="color: var(--color-ink);">{ fmt.Sprintf("%d", typ.Time) }</span>
-									<span style="color: var(--color-ink-lighter);"> min</span>
+								<div class="text-right w-28">
+									<span class="font-medium" style="color: var(--color-ink);">{ formatDuration(typ.Time) }</span>
 								</div>
 							}
 							<div class="text-right w-24">
