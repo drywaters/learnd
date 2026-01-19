@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"log/slog"
+	"strings"
 	"sync"
 	"time"
 
@@ -146,13 +147,13 @@ func (w *Worker) processEnrichment(ctx context.Context) {
 			}
 		}
 
-		// Save enrichment result
+		// Save enrichment result (sanitize text fields to remove invalid UTF-8)
 		enrichResult := &repository.EnrichmentResult{
 			CanonicalURL:   result.CanonicalURL,
 			Domain:         result.Domain,
 			SourceType:     result.SourceType,
-			Title:          result.Title,
-			Description:    result.Description,
+			Title:          sanitizeUTF8(result.Title),
+			Description:    sanitizeUTF8(result.Description),
 			PublishedAt:    result.PublishedAt,
 			RuntimeSeconds: result.RuntimeSeconds,
 			MetadataJSON:   metadataJSON,
@@ -272,4 +273,11 @@ func hashURL(url string) string {
 	h := sha256.New()
 	h.Write([]byte(url))
 	return hex.EncodeToString(h.Sum(nil))
+}
+
+// sanitizeUTF8 removes invalid UTF-8 byte sequences from a string.
+// This prevents PostgreSQL errors when storing text that may contain
+// malformed characters from web scraping.
+func sanitizeUTF8(s string) string {
+	return strings.ToValidUTF8(s, "")
 }
