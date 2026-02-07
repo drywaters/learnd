@@ -31,6 +31,23 @@
 - Prefer table-driven tests where multiple cases apply.
 - Run `make test` before opening a PR; add tests for handlers, repositories, or enrichers when behavior changes.
 
+### Playwright Auth State (Manual Capture)
+- This repo includes a helper to manually log in via a headed Playwright browser and save `storageState` (cookies + localStorage) for reuse by tests/agents.
+- Config lives in `auth.config.json`:
+  - `appName` (used for the output filename)
+  - `baseURL`
+  - `loginURL` (optional; if omitted the script opens `baseURL`)
+- Capture flow:
+  - If `./.auth/<appName>.json` already exists and is still valid, you can skip capture (this is typically a one-time setup per environment/app).
+  - Install Playwright locally (this repo gitignores `package.json` and `node_modules/`):
+    - `npm i -D playwright`
+    - `npx playwright install chromium chromium-headless-shell`
+  - Run capture:
+    - `node scripts/auth-capture.js`
+  - Log in in the opened browser window, then press Enter in the terminal.
+- Output is saved to `./.auth/<appName>.json` (directory is gitignored).
+- Refresh by re-running the capture when auth expires/changes; pass `--overwrite` (or confirm the prompt) to replace the existing file.
+
 ## Commit & Pull Request Guidelines
 - Follow Conventional Commits (`type: summary`), as seen in history (e.g., `chore: add license file`).
 - Keep commit subjects short, imperative, and scoped to one change.
