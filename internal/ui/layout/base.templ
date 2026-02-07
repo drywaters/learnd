@@ -22,6 +22,7 @@ templ Base(title string) {
 
 		<!-- HTMX -->
 		<script src="/static/htmx.min.js"></script>
+		<meta name="htmx-config" content='{"responseHandling": [{"code":"204", "swap": false}, {"code":"[23]..", "swap": true}, {"code":"422", "swap": true, "error": true}, {"code":"[45]..", "swap": false, "error": true}]}'/>
 
 		<!-- Tailwind + Custom Styles -->
 		<link rel="stylesheet" href="/static/styles.css"/>

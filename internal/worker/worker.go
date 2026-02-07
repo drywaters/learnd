@@ -217,10 +217,14 @@ func (w *Worker) processSummarization(ctx context.Context) {
 		}
 
 		// Build input
+		tag := ""
+		if entry.Tag != nil {
+			tag = *entry.Tag
+		}
 		input := summarizer.Input{
 			SourceType: entry.SourceType,
 			URL:        entry.SourceURL,
-			Tags:       entry.Tags,
+			Tag:        tag,
 		}
 		if entry.Title != nil {
 			input.Title = *entry.Title

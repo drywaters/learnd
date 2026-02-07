@@ -44,19 +44,22 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 							</div>
 							<div class="md:w-48">
 								<label for="tags" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">
-									Tags
+									Tag
 								</label>
 								<input
 									type="text"
 									id="tags"
 									name="tags"
 									class="input-field w-full"
-									placeholder="ai, tech, js"
+									placeholder="ai"
+									pattern="[a-zA-Z0-9-]*"
+									title="Lowercase letters, numbers, and hyphens only"
 									autocomplete="off"
 								/>
 							</div>
 						</div>
 
+						<div id="form-error" class="mb-4"></div>
 						<div id="duplicate-warning" class="mb-4"></div>
 
 						<!-- Optional Fields Row -->

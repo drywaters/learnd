@@ -16,11 +16,12 @@ import (
 	"github.com/google/uuid"
 )
 
-func TestParseTags(t *testing.T) {
+func TestParseTag(t *testing.T) {
 	tests := []struct {
-		name     string
-		input    string
-		expected []string
+		name        string
+		input       string
+		expected    *string
+		expectError bool
 	}{
 		{
 			name:     "empty string",
@@ -28,42 +29,59 @@ func TestParseTags(t *testing.T) {
 			expected: nil,
 		},
 		{
-			name:     "single tag",
+			name:     "valid tag",
 			input:    "golang",
-			expected: []string{"golang"},
+			expected: strPtr("golang"),
 		},
 		{
-			name:     "multiple tags",
-			input:    "golang,rust,python",
-			expected: []string{"golang", "rust", "python"},
+			name:     "uppercase lowercased",
+			input:    "GoLang",
+			expected: strPtr("golang"),
 		},
 		{
-			name:     "tags with whitespace",
-			input:    " golang , rust , python ",
-			expected: []string{"golang", "rust", "python"},
+			name:     "hyphenated tag",
+			input:    "machine-learning",
+			expected: strPtr("machine-learning"),
 		},
 		{
-			name:     "tags with empty entries",
-			input:    "golang,,rust,  ,python",
-			expected: []string{"golang", "rust", "python"},
+			name:        "comma separated rejected",
+			input:       "ai, tech",
+			expectError: true,
 		},
 		{
-			name:     "only whitespace and commas",
-			input:    " , , , ",
-			expected: nil,
+			name:        "space rejected",
+			input:       "hello world",
+			expectError: true,
+		},
+		{
+			name:     "trimmed whitespace",
+			input:    "  ai  ",
+			expected: strPtr("ai"),
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			result := parseTags(tt.input)
-			if len(result) != len(tt.expected) {
-				t.Errorf("parseTags(%q) = %v, want %v", tt.input, result, tt.expected)
+			result, err := parseTag(tt.input)
+			if tt.expectError {
+				if err == nil {
+					t.Errorf("parseTag(%q) expected error, got nil", tt.input)
+				}
 				return
 			}
-			for i := range result {
-				if result[i] != tt.expected[i] {
-					t.Errorf("parseTags(%q)[%d] = %q, want %q", tt.input, i, result[i], tt.expected[i])
+			if err != nil {
+				t.Errorf("parseTag(%q) unexpected error: %v", tt.input, err)
+				return
+			}
+			if tt.expected == nil {
+				if result != nil {
+					t.Errorf("parseTag(%q) = %q, want nil", tt.input, *result)
+				}
+			} else {
+				if result == nil {
+					t.Errorf("parseTag(%q) = nil, want %q", tt.input, *tt.expected)
+				} else if *result != *tt.expected {
+					t.Errorf("parseTag(%q) = %q, want %q", tt.input, *result, *tt.expected)
 				}
 			}
 		})
@@ -492,7 +510,7 @@ func createTestEntry(id uuid.UUID) *model.Entry {
 		UpdatedAt:        time.Now(),
 		SourceURL:        "https://example.com/test",
 		NormalizedURL:    "example.com/test",
-		Tags:             []string{"test"},
+		Tag:              strPtr("test"),
 		SourceType:       model.SourceTypeArticle,
 		Title:            &title,
 		Description:      &description,
@@ -610,7 +628,7 @@ func TestUpdate(t *testing.T) {
 			name: "successful update with all fields",
 			id:   "550e8400-e29b-41d4-a716-446655440000",
 			formData: url.Values{
-				"tags":        {"go, testing"},
+				"tags":        {"go"},
 				"time_spent":  {"30"},
 				"quantity":    {"1"},
 				"notes":       {"Test notes"},

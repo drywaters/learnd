@@ -13,7 +13,7 @@ type Input struct {
 	Description string
 	SourceType  model.SourceType
 	URL         string
-	Tags        []string
+	Tag         string
 }
 
 // Result contains the generated summary and metadata

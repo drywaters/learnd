@@ -101,8 +101,8 @@ templ EntryRow(entry ui.EntryView) {
 					{ string(entry.SourceType) }
 				</span>
 
-				for _, tag := range entry.Tags {
-					<span class="tag">{ tag }</span>
+				if entry.Tag != nil && *entry.Tag != "" {
+					<span class="tag">{ *entry.Tag }</span>
 				}
 
 				if entry.Domain != nil {

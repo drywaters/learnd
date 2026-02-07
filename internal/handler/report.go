@@ -202,13 +202,8 @@ func (h *ReportHandler) ExportCSV(w http.ResponseWriter, r *http.Request) {
 			}
 
 			tags := ""
-			if len(entry.Tags) > 0 {
-				for i, tag := range entry.Tags {
-					if i > 0 {
-						tags += ", "
-					}
-					tags += tag
-				}
+			if entry.Tag != nil {
+				tags = *entry.Tag
 			}
 
 			timeSpent := ""

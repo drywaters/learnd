@@ -102,9 +102,9 @@ func buildPrompt(input Input) string {
 		sb.WriteString("\n\n")
 	}
 
-	if len(input.Tags) > 0 {
+	if input.Tag != "" {
 		sb.WriteString("Topics: ")
-		sb.WriteString(strings.Join(input.Tags, ", "))
+		sb.WriteString(input.Tag)
 		sb.WriteString("\n\n")
 	}
 

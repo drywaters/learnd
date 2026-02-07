@@ -24,13 +24,10 @@ func NewEntryRepository(pool *pgxpool.Pool) *EntryRepository {
 
 // Create inserts a new entry
 func (r *EntryRepository) Create(ctx context.Context, input *model.CreateEntryInput) (*model.Entry, error) {
-	// Normalize tags: lowercase, trim, dedupe
-	tags := normalizeTags(input.Tags)
-
 	query := `
-		INSERT INTO entries (source_url, normalized_url, tags, time_spent_seconds, quantity, notes)
+		INSERT INTO entries (source_url, normalized_url, tag, time_spent_seconds, quantity, notes)
 		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		RETURNING id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		          canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		          enrichment_status, enrichment_error, enriched_at,
 		          summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -40,12 +37,12 @@ func (r *EntryRepository) Create(ctx context.Context, input *model.CreateEntryIn
 	err := r.pool.QueryRow(ctx, query,
 		input.SourceURL,
 		input.NormalizedURL,
-		tags,
+		input.Tag,
 		input.TimeSpentSeconds,
 		input.Quantity,
 		input.Notes,
 	).Scan(
-		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tags,
+		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tag,
 		&entry.TimeSpentSeconds, &entry.Quantity, &entry.Notes,
 		&entry.CanonicalURL, &entry.Domain, &entry.SourceType, &entry.Title, &entry.Description,
 		&entry.PublishedAt, &entry.RuntimeSeconds, &entry.MetadataJSON,
@@ -63,7 +60,7 @@ func (r *EntryRepository) Create(ctx context.Context, input *model.CreateEntryIn
 // GetByID retrieves an entry by ID
 func (r *EntryRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Entry, error) {
 	query := `
-		SELECT id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		SELECT id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		       canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		       enrichment_status, enrichment_error, enriched_at,
 		       summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -73,7 +70,7 @@ func (r *EntryRepository) GetByID(ctx context.Context, id uuid.UUID) (*model.Ent
 
 	var entry model.Entry
 	err := r.pool.QueryRow(ctx, query, id).Scan(
-		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tags,
+		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tag,
 		&entry.TimeSpentSeconds, &entry.Quantity, &entry.Notes,
 		&entry.CanonicalURL, &entry.Domain, &entry.SourceType, &entry.Title, &entry.Description,
 		&entry.PublishedAt, &entry.RuntimeSeconds, &entry.MetadataJSON,
@@ -106,7 +103,7 @@ func (r *EntryRepository) List(ctx context.Context, opts ListOptions) ([]model.E
 	}
 
 	query := `
-		SELECT id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		SELECT id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		       canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		       enrichment_status, enrichment_error, enriched_at,
 		       summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -147,24 +144,22 @@ func (r *EntryRepository) List(ctx context.Context, opts ListOptions) ([]model.E
 
 // Update updates an entry's user-editable fields
 func (r *EntryRepository) Update(ctx context.Context, id uuid.UUID, input *model.UpdateEntryInput) (*model.Entry, error) {
-	tags := normalizeTags(input.Tags)
-
 	query := `
 		UPDATE entries
-		SET tags = $2, time_spent_seconds = $3, quantity = $4, notes = $5,
+		SET tag = $2, time_spent_seconds = $3, quantity = $4, notes = $5,
 		    title = $6, description = $7, summary_text = $8, source_type = $9,
 		    updated_at = NOW()
 		WHERE id = $1
-		RETURNING id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		RETURNING id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		          canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		          enrichment_status, enrichment_error, enriched_at,
 		          summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
 	`
 
 	var entry model.Entry
-	err := r.pool.QueryRow(ctx, query, id, tags, input.TimeSpentSeconds, input.Quantity, input.Notes,
+	err := r.pool.QueryRow(ctx, query, id, input.Tag, input.TimeSpentSeconds, input.Quantity, input.Notes,
 		input.Title, input.Description, input.SummaryText, input.SourceType).Scan(
-		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tags,
+		&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tag,
 		&entry.TimeSpentSeconds, &entry.Quantity, &entry.Notes,
 		&entry.CanonicalURL, &entry.Domain, &entry.SourceType, &entry.Title, &entry.Description,
 		&entry.PublishedAt, &entry.RuntimeSeconds, &entry.MetadataJSON,
@@ -282,7 +277,7 @@ func (r *EntryRepository) GetDuplicateCountsByNormalizedURL(ctx context.Context,
 // GetPendingEnrichment retrieves entries pending enrichment
 func (r *EntryRepository) GetPendingEnrichment(ctx context.Context, limit int) ([]model.Entry, error) {
 	query := `
-		SELECT id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		SELECT id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		       canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		       enrichment_status, enrichment_error, enriched_at,
 		       summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -304,7 +299,7 @@ func (r *EntryRepository) GetPendingEnrichment(ctx context.Context, limit int) (
 // GetPendingSummary retrieves entries pending summarization (enrichment must be complete)
 func (r *EntryRepository) GetPendingSummary(ctx context.Context, limit int) ([]model.Entry, error) {
 	query := `
-		SELECT id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		SELECT id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		       canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		       enrichment_status, enrichment_error, enriched_at,
 		       summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -326,7 +321,7 @@ func (r *EntryRepository) GetPendingSummary(ctx context.Context, limit int) ([]m
 // ListByNormalizedURL retrieves entries matching the normalized URL.
 func (r *EntryRepository) ListByNormalizedURL(ctx context.Context, normalizedURL string) ([]model.Entry, error) {
 	query := `
-		SELECT id, created_at, updated_at, source_url, normalized_url, tags, time_spent_seconds, quantity, notes,
+		SELECT id, created_at, updated_at, source_url, normalized_url, tag, time_spent_seconds, quantity, notes,
 		       canonical_url, domain, source_type, title, description, published_at, runtime_seconds, metadata_json,
 		       enrichment_status, enrichment_error, enriched_at,
 		       summary_text, summary_status, summary_error, summary_provider, summary_model, summary_version, summary_generated_at
@@ -491,8 +486,8 @@ type ReportTotals struct {
 func (r *EntryRepository) AggregateByTag(ctx context.Context, start, end time.Time) ([]TagAggregation, error) {
 	query := `
 		SELECT tag, COUNT(*), COALESCE(SUM(COALESCE(time_spent_seconds, runtime_seconds, 0)), 0)::int
-		FROM entries, unnest(tags) AS tag
-		WHERE created_at >= $1 AND created_at <= $2
+		FROM entries
+		WHERE created_at >= $1 AND created_at <= $2 AND tag IS NOT NULL AND tag != ''
 		GROUP BY tag
 		ORDER BY COUNT(*) DESC
 	`
@@ -566,27 +561,13 @@ func (r *EntryRepository) GetReportTotals(ctx context.Context, start, end time.T
 	return &totals, nil
 }
 
-// normalizeTags lowercases, trims, and dedupes tags
-func normalizeTags(tags []string) []string {
-	seen := make(map[string]bool)
-	result := []string{} // Initialize as empty slice, not nil (nil would be interpreted as SQL NULL)
-	for _, tag := range tags {
-		tag = strings.ToLower(strings.TrimSpace(tag))
-		if tag != "" && !seen[tag] {
-			seen[tag] = true
-			result = append(result, tag)
-		}
-	}
-	return result
-}
-
 // scanEntries scans rows into entries slice
 func scanEntries(rows pgx.Rows) ([]model.Entry, error) {
 	var entries []model.Entry
 	for rows.Next() {
 		var entry model.Entry
 		err := rows.Scan(
-			&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tags,
+			&entry.ID, &entry.CreatedAt, &entry.UpdatedAt, &entry.SourceURL, &entry.NormalizedURL, &entry.Tag,
 			&entry.TimeSpentSeconds, &entry.Quantity, &entry.Notes,
 			&entry.CanonicalURL, &entry.Domain, &entry.SourceType, &entry.Title, &entry.Description,
 			&entry.PublishedAt, &entry.RuntimeSeconds, &entry.MetadataJSON,
