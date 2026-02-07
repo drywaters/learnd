@@ -15,12 +15,14 @@ This repo includes a small helper that opens a real (headed) browser so you can 
    - Edit `auth.config.json` (`appName`, `baseURL`, optional `loginURL`).
 2. Install Playwright (repo-local; this repo gitignores `package.json` and `node_modules/`):
    - `npm i -D playwright`
-   - `npx playwright install chromium chromium-headless-shell`
+   - `npx playwright install chromium`
 3. Capture auth state:
    - `node scripts/auth-capture.js`
 
 The state is saved to `./.auth/<appName>.json` (and `./.auth/` is gitignored). To refresh it, re-run the capture and confirm the overwrite prompt (or pass `--overwrite`).
 If the state file already exists and is still valid, you typically do not need to run capture again.
+
+If you later run Playwright in headless mode and see missing browser executable errors, run `npx playwright install` to install Playwright's default browsers for your version/platform.
 
 ## Configuration
 

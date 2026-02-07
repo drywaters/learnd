@@ -141,7 +141,7 @@ async function main() {
     console.error(`Playwright is not installed (can't resolve "playwright").\n`);
     console.error(`Install it repo-locally (untracked in this repo) and try again:\n`);
     console.error(`  npm i -D playwright`);
-    console.error(`  npx playwright install chromium chromium-headless-shell\n`);
+    console.error(`  npx playwright install chromium\n`);
     process.exit(1);
   }
 

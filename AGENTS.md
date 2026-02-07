@@ -41,12 +41,14 @@
   - If `./.auth/<appName>.json` already exists and is still valid, you can skip capture (this is typically a one-time setup per environment/app).
   - Install Playwright locally (this repo gitignores `package.json` and `node_modules/`):
     - `npm i -D playwright`
-    - `npx playwright install chromium chromium-headless-shell`
+    - `npx playwright install chromium`
   - Run capture:
     - `node scripts/auth-capture.js`
   - Log in in the opened browser window, then press Enter in the terminal.
 - Output is saved to `./.auth/<appName>.json` (directory is gitignored).
 - Refresh by re-running the capture when auth expires/changes; pass `--overwrite` (or confirm the prompt) to replace the existing file.
+
+- Note: If an agent/test later runs Playwright headless and encounters missing browser executable errors, run `npx playwright install` to install the default browsers for the current Playwright version/platform.
 
 ## Commit & Pull Request Guidelines
 - Follow Conventional Commits (`type: summary`), as seen in history (e.g., `chore: add license file`).
