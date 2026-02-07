@@ -42,6 +42,7 @@ Examples:
 
 function parseArgs(argv) {
   const out = {};
+  const valueLessFlags = new Set(['overwrite']);
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === '-h' || a === '--help') out.help = true;
@@ -51,8 +52,12 @@ function parseArgs(argv) {
     } else if (a.startsWith('--')) {
       const k = a.slice(2);
       const v = argv[i + 1];
-      if (!v || v.startsWith('--')) out[k] = true;
-      else {
+      // Only allow valueless flags (like --overwrite). For everything else, fail-fast
+      // if the value is missing or the next token is another flag.
+      if (v === undefined || v.startsWith('--')) {
+        if (valueLessFlags.has(k)) out[k] = true;
+        else throw new Error(`Missing value for --${k}`);
+      } else {
         out[k] = v;
         i++;
       }
