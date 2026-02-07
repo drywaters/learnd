@@ -26,6 +26,10 @@ go.work
 local.mk
 .worktree.json
 
+# Playwright auth state capture
+.auth/
+auth/
+
 # Generated CSS (rebuild from tailwind/)
 static/styles.css
 
