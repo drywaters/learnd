@@ -2,8 +2,11 @@ package handler
 
 import (
 	"encoding/json"
+	"fmt"
+	"html"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -69,7 +72,11 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse optional fields
-	tags := parseTags(r.FormValue("tags"))
+	tag, err := parseTag(r.FormValue("tags"))
+	if err != nil {
+		h.htmxError(w, err.Error())
+		return
+	}
 	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
 	quantity := parseQuantity(r.FormValue("quantity"))
 	notes := parseOptionalString(r.FormValue("notes"))
@@ -77,7 +84,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	input := &model.CreateEntryInput{
 		SourceURL:        url,
 		NormalizedURL:    normalizedURL,
-		Tags:             tags,
+		Tag:              tag,
 		TimeSpentSeconds: timeSpent,
 		Quantity:         quantity,
 		Notes:            notes,
@@ -127,6 +134,9 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 
 	// Clear duplicate warning
 	partials.DuplicateWarning(false, "", time.Time{}).Render(ctx, w)
+
+	// Clear form error
+	fmt.Fprint(w, `<div id="form-error" hx-swap-oob="true"></div>`)
 }
 
 // List returns entries as JSON
@@ -239,7 +249,11 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse user fields
-	tags := parseTags(r.FormValue("tags"))
+	tag, err := parseTag(r.FormValue("tags"))
+	if err != nil {
+		h.htmxError(w, err.Error())
+		return
+	}
 	timeSpent := parseTimeSpentMinutes(r.FormValue("time_spent"))
 	quantity := parseQuantity(r.FormValue("quantity"))
 	notes := parseOptionalString(r.FormValue("notes"))
@@ -251,7 +265,7 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	sourceType := parseSourceType(r.FormValue("source_type"))
 
 	input := &model.UpdateEntryInput{
-		Tags:             tags,
+		Tag:              tag,
 		TimeSpentSeconds: timeSpent,
 		Quantity:         quantity,
 		Notes:            notes,
@@ -424,8 +438,10 @@ func (h *EntryHandler) Status(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *EntryHandler) htmxError(w http.ResponseWriter, msg string) {
-	h.htmxToast(w, msg, nil, "error")
-	w.WriteHeader(http.StatusBadRequest)
+	w.Header().Set("HX-Retarget", "#form-error")
+	w.Header().Set("HX-Reswap", "innerHTML")
+	w.WriteHeader(http.StatusUnprocessableEntity)
+	fmt.Fprintf(w, `<p class="text-sm" style="color: var(--color-error);">%s</p>`, html.EscapeString(msg))
 }
 
 func (h *EntryHandler) htmxToast(w http.ResponseWriter, msg string, entryID *uuid.UUID, toastType string) {
@@ -447,18 +463,19 @@ func (h *EntryHandler) htmxToast(w http.ResponseWriter, msg string, entryID *uui
 	}
 }
 
-// parseTags parses a comma-separated string into a slice of trimmed, non-empty tags.
-func parseTags(tagsStr string) []string {
-	var tags []string
-	if tagsStr != "" {
-		for _, tag := range strings.Split(tagsStr, ",") {
-			tag = strings.TrimSpace(tag)
-			if tag != "" {
-				tags = append(tags, tag)
-			}
-		}
+var tagRegex = regexp.MustCompile(`^[a-z0-9-]+$`)
+
+// parseTag trims whitespace, lowercases the input, and validates it as a single tag.
+// Returns nil if empty, or an error if the tag contains invalid characters.
+func parseTag(tagStr string) (*string, error) {
+	tag := strings.ToLower(strings.TrimSpace(tagStr))
+	if tag == "" {
+		return nil, nil
 	}
-	return tags
+	if !tagRegex.MatchString(tag) {
+		return nil, fmt.Errorf("Invalid tag: only lowercase letters, numbers, and hyphens are allowed")
+	}
+	return &tag, nil
 }
 
 // parseTimeSpentMinutes parses a time spent value in minutes and returns seconds.

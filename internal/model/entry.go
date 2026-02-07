@@ -37,7 +37,7 @@ type Entry struct {
 	// User input
 	SourceURL        string   `json:"source_url"`
 	NormalizedURL    string   `json:"normalized_url"`
-	Tags             []string `json:"tags"`
+	Tag              *string  `json:"tag"`
 	TimeSpentSeconds *int     `json:"time_spent_seconds,omitempty"`
 	Quantity         *int     `json:"quantity,omitempty"`
 	Notes            *string  `json:"notes,omitempty"`
@@ -71,7 +71,7 @@ type Entry struct {
 type CreateEntryInput struct {
 	SourceURL        string
 	NormalizedURL    string
-	Tags             []string
+	Tag              *string
 	TimeSpentSeconds *int
 	Quantity         *int
 	Notes            *string
@@ -79,7 +79,7 @@ type CreateEntryInput struct {
 
 // UpdateEntryInput represents input for updating an entry
 type UpdateEntryInput struct {
-	Tags             []string
+	Tag              *string
 	TimeSpentSeconds *int
 	Quantity         *int
 	Notes            *string
