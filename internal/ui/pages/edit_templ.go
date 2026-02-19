@@ -133,7 +133,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" hx-swap=\"none\"><div id=\"form-error\" class=\"mb-4\"></div><!-- User Fields Section --><div class=\"mb-6\"><h2 class=\"text-xs font-semibold uppercase tracking-wide mb-4\" style=\"color: var(--color-ink-lighter);\">User Fields</h2><div class=\"space-y-4\"><div class=\"flex flex-col sm:flex-row gap-4\"><div class=\"flex-grow\"><label for=\"tags\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Tag</label> <input type=\"text\" id=\"tags\" name=\"tags\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\" hx-swap=\"none\"><div id=\"form-error\" class=\"mb-4\"></div><!-- User Fields Section --><div class=\"mb-6\"><h2 class=\"text-xs font-semibold uppercase tracking-wide mb-4\" style=\"color: var(--color-ink-lighter);\">User Fields</h2><div class=\"space-y-4\"><div class=\"flex flex-col sm:flex-row gap-4\"><div class=\"flex-grow\"><label for=\"tag\" class=\"block text-xs font-medium mb-1.5\" style=\"color: var(--color-ink-lighter);\">Tag</label> <input type=\"text\" id=\"tag\" name=\"tag\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -274,7 +274,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, ">Other</option></select></div></div><!-- Actions --><div class=\"flex items-center justify-between pt-6 border-t\" style=\"border-color: var(--color-warm-gray);\"><!-- Re-sync actions (left side) --><div class=\"flex items-center gap-2\"><button type=\"button\" hx-post=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 26, ">Other</option></select></div></div><!-- Actions --><div class=\"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t\" style=\"border-color: var(--color-warm-gray);\"><!-- Re-sync actions (left side) --><div class=\"flex items-center gap-2\"><button type=\"button\" hx-post=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -316,7 +316,7 @@ func EditPage(entry ui.EntryView) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<span>Re-summarize</span></button></div><!-- Main actions (right side) --><div class=\"flex items-center gap-3\"><a href=\"/\" class=\"btn-secondary\">Cancel</a> <button type=\"submit\" class=\"btn-primary flex items-center gap-2\"><span class=\"htmx-indicator animate-spin\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 30, "<span>Re-summarize</span></button></div><!-- Main actions (right side) --><div class=\"flex items-center gap-3 justify-end\"><a href=\"/\" class=\"btn-secondary\">Cancel</a> <button type=\"submit\" class=\"btn-primary flex items-center gap-2\"><span class=\"htmx-indicator animate-spin\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

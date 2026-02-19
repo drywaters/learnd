@@ -628,7 +628,7 @@ func TestUpdate(t *testing.T) {
 			name: "successful update with all fields",
 			id:   "550e8400-e29b-41d4-a716-446655440000",
 			formData: url.Values{
-				"tags":        {"go"},
+				"tag":         {"go"},
 				"time_spent":  {"30"},
 				"quantity":    {"1"},
 				"notes":       {"Test notes"},
@@ -649,6 +649,9 @@ func TestUpdate(t *testing.T) {
 			},
 			expectedStatus: http.StatusOK,
 			verifyInput: func(t *testing.T, input *model.UpdateEntryInput) {
+				if input.Tag == nil || *input.Tag != "go" {
+					t.Errorf("Update() tag = %v, want \"go\"", input.Tag)
+				}
 				if input.Title == nil || *input.Title != "Updated Title" {
 					t.Errorf("Update() title = %v, want 'Updated Title'", input.Title)
 				}
@@ -780,6 +783,16 @@ func TestUpdate(t *testing.T) {
 					t.Errorf("Update() title = %v, want 'Valid Title'", input.Title)
 				}
 			},
+		},
+		{
+			name: "invalid tag returns 422",
+			id:   "550e8400-e29b-41d4-a716-446655440000",
+			formData: url.Values{
+				"tag": {"has spaces"},
+			},
+			mockSetup:      func(m *mockEntryRepo) {},
+			expectedStatus: http.StatusUnprocessableEntity,
+			expectedBody:   "Invalid tag",
 		},
 	}
 
