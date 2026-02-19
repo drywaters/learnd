@@ -199,9 +199,9 @@ templ EditPage(entry ui.EntryView) {
 						</div>
 
 						<!-- Actions -->
-						<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t" style="border-color: var(--color-warm-gray);">
+						<div class="flex flex-col sm:flex-row sm:items-center gap-3 pt-6 border-t" style="border-color: var(--color-warm-gray);">
 							<!-- Re-sync actions (left side) -->
-							<div class="flex items-center gap-2">
+							<div class="flex flex-col sm:flex-row sm:items-center gap-2">
 								<button
 									type="button"
 									hx-post={ fmt.Sprintf("/api/entries/%s/refresh-enrichment", entry.ID) }
@@ -225,7 +225,7 @@ templ EditPage(entry ui.EntryView) {
 							</div>
 
 							<!-- Main actions (right side) -->
-							<div class="flex items-center gap-3 sm:ml-auto">
+							<div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:ml-auto">
 								<a
 									href="/"
 									class="btn-secondary"
