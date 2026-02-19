@@ -24,7 +24,7 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 						hx-swap="afterbegin"
 						hx-on::after-request="if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }"
 					>
-						<!-- URL and Tags Row -->
+						<!-- URL and Tag Row -->
 						<div class="flex flex-col md:flex-row gap-4 mb-4">
 							<div class="flex-grow">
 								<label for="url" class="block text-sm font-medium mb-2" style="color: var(--color-ink-light);">

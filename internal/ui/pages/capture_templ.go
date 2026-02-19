@@ -58,7 +58,7 @@ func CapturePage(entries []ui.EntryView, prefillURL string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<main class=\"max-w-4xl mx-auto px-4 py-8\"><!-- Capture Form --><div class=\"card p-6 md:p-8 mb-8\"><form id=\"capture-form\" hx-post=\"/api/entries\" hx-target=\"#entry-list\" hx-swap=\"afterbegin\" hx-on::after-request=\"if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }\"><!-- URL and Tags Row --><div class=\"flex flex-col md:flex-row gap-4 mb-4\"><div class=\"flex-grow\"><label for=\"url\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">URL</label> <input type=\"url\" id=\"url\" name=\"url\" value=\"")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 2, "<main class=\"max-w-4xl mx-auto px-4 py-8\"><!-- Capture Form --><div class=\"card p-6 md:p-8 mb-8\"><form id=\"capture-form\" hx-post=\"/api/entries\" hx-target=\"#entry-list\" hx-swap=\"afterbegin\" hx-on::after-request=\"if(event.detail.successful && event.detail.xhr.getResponseHeader('X-Entry-Created') === 'true') { this.reset(); document.getElementById('url').focus(); }\"><!-- URL and Tag Row --><div class=\"flex flex-col md:flex-row gap-4 mb-4\"><div class=\"flex-grow\"><label for=\"url\" class=\"block text-sm font-medium mb-2\" style=\"color: var(--color-ink-light);\">URL</label> <input type=\"url\" id=\"url\" name=\"url\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
