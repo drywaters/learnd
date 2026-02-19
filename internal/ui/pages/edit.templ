@@ -63,13 +63,13 @@ templ EditPage(entry ui.EntryView) {
 							<div class="space-y-4">
 								<div class="flex flex-col sm:flex-row gap-4">
 									<div class="flex-grow">
-										<label for="tags" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
+										<label for="tag" class="block text-xs font-medium mb-1.5" style="color: var(--color-ink-lighter);">
 											Tag
 										</label>
 										<input
 											type="text"
-											id="tags"
-											name="tags"
+											id="tag"
+											name="tag"
 											value={ safeString(entry.Tag) }
 											class="input-field w-full text-sm"
 											placeholder="ai"
@@ -199,7 +199,7 @@ templ EditPage(entry ui.EntryView) {
 						</div>
 
 						<!-- Actions -->
-						<div class="flex items-center justify-between pt-6 border-t" style="border-color: var(--color-warm-gray);">
+						<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t" style="border-color: var(--color-warm-gray);">
 							<!-- Re-sync actions (left side) -->
 							<div class="flex items-center gap-2">
 								<button
@@ -225,7 +225,7 @@ templ EditPage(entry ui.EntryView) {
 							</div>
 
 							<!-- Main actions (right side) -->
-							<div class="flex items-center gap-3">
+							<div class="flex items-center gap-3 sm:justify-end">
 								<a
 									href="/"
 									class="btn-secondary"

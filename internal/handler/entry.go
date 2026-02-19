@@ -72,7 +72,7 @@ func (h *EntryHandler) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse optional fields
-	tag, err := parseTag(r.FormValue("tags"))
+	tag, err := parseTag(r.FormValue("tag"))
 	if err != nil {
 		h.htmxError(w, err.Error())
 		return
@@ -249,7 +249,7 @@ func (h *EntryHandler) Update(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Parse user fields
-	tag, err := parseTag(r.FormValue("tags"))
+	tag, err := parseTag(r.FormValue("tag"))
 	if err != nil {
 		h.htmxError(w, err.Error())
 		return

@@ -628,7 +628,7 @@ func TestUpdate(t *testing.T) {
 			name: "successful update with all fields",
 			id:   "550e8400-e29b-41d4-a716-446655440000",
 			formData: url.Values{
-				"tags":        {"go"},
+				"tag":         {"go"},
 				"time_spent":  {"30"},
 				"quantity":    {"1"},
 				"notes":       {"Test notes"},
