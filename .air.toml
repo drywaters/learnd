@@ -3,7 +3,7 @@ tmp_dir = "tmp"
 
 [build]
   # Run templ generate and tailwind before building
-  pre_cmd = ["templ generate", "tailwindcss -i ./tailwind/styles.css -o ./static/styles.css"]
+  pre_cmd = ["templ generate", "npx tailwindcss -i ./tailwind/styles.css -o ./static/styles.css"]
   cmd = "go build -o ./tmp/main ./cmd/learnd"
   entrypoint = ["./tmp/main"]
   delay = 500
