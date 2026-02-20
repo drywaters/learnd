@@ -107,8 +107,10 @@ templ CapturePage(entries []ui.EntryView, prefillURL string) {
 						<!-- Submit Button -->
 						<div class="flex justify-end">
 							<button type="submit" class="btn-primary relative flex items-center justify-center pl-6">
-								<span class="htmx-indicator animate-spin">
-									@components.SpinnerIcon()
+								<span class="htmx-indicator">
+									<span class="animate-spin inline-block">
+										@components.SpinnerIcon()
+									</span>
 								</span>
 								<span>Save Entry</span>
 							</button>
