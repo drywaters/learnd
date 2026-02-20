@@ -1,0 +1,20 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # Run templ generate and tailwind before building
+  pre_cmd = ["templ generate", "npx tailwindcss -i ./tailwind/styles.css -o ./static/styles.css"]
+  cmd = "go build -o ./tmp/main ./cmd/learnd"
+  entrypoint = ["./tmp/main"]
+  delay = 500
+  include_ext = ["go", "templ", "css"]
+  include_dir = ["cmd", "internal", "tailwind"]
+  exclude_dir = ["tmp", "bin", "static", "migrations", "node_modules"]
+  exclude_regex = ["_templ\\.go$"]
+  kill_delay = "1s"
+
+[log]
+  main_only = false
+
+[misc]
+  clean_on_exit = true
