@@ -262,11 +262,15 @@
 
 	/* HTMX loading states */
 	.htmx-request .htmx-indicator {
-		display: inline-block;
+		opacity: 1;
 	}
 
 	.htmx-indicator {
-		display: none;
+		opacity: 0;
+		position: absolute;
+		left: 0.75rem;
+		top: 50%;
+		transform: translateY(-50%);
 	}
 
 	/* Toast notifications */
